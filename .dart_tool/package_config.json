@@ -32,6 +32,18 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "bloc",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/bloc-8.1.4",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "bloc_test",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/bloc_test-9.1.7",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "boolean_selector",
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/boolean_selector-2.1.2",
       "packageUri": "lib/",
@@ -104,6 +116,18 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "diff_match_patch",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/diff_match_patch-0.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "equatable",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/equatable-2.0.7",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "fake_async",
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/fake_async-1.3.2",
       "packageUri": "lib/",
@@ -117,7 +141,7 @@
     },
     {
       "name": "flutter",
-      "rootUri": "file:///Users/egyleader/fvm/default/packages/flutter",
+      "rootUri": "file:///Users/egyleader/fvm/versions/stable/packages/flutter",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -129,9 +153,15 @@
     },
     {
       "name": "flutter_test",
-      "rootUri": "file:///Users/egyleader/fvm/default/packages/flutter_test",
+      "rootUri": "file:///Users/egyleader/fvm/versions/stable/packages/flutter_test",
       "packageUri": "lib/",
       "languageVersion": "3.7"
+    },
+    {
+      "name": "formz",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/formz-0.7.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
     },
     {
       "name": "frontend_server_client",
@@ -254,8 +284,20 @@
       "languageVersion": "3.2"
     },
     {
+      "name": "mocktail",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/mocktail-1.0.4",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "mustache_template",
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/mustache_template-2.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "nested",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/nested-1.0.0",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -298,6 +340,12 @@
     {
       "name": "prompts",
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/prompts-2.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "provider",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/provider-6.1.2",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -345,7 +393,7 @@
     },
     {
       "name": "sky_engine",
-      "rootUri": "file:///Users/egyleader/fvm/default/bin/cache/pkg/sky_engine",
+      "rootUri": "file:///Users/egyleader/fvm/versions/stable/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -488,10 +536,10 @@
       "languageVersion": "3.7"
     }
   ],
-  "generated": "2025-03-09T14:14:28.477705Z",
+  "generated": "2025-03-10T11:50:39.807963Z",
   "generator": "pub",
   "generatorVersion": "3.7.0",
-  "flutterRoot": "file:///Users/egyleader/fvm/default",
+  "flutterRoot": "file:///Users/egyleader/fvm/versions/stable",
   "flutterVersion": "3.29.0",
   "pubCache": "file:///Users/egyleader/.pub-cache"
 }
