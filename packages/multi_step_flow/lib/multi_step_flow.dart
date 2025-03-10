@@ -1,8 +1,8 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
-library;
+library multi_step_flow;
 
-export 'src/multi_step_flow_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'src/models/flow_step.dart';
+export 'src/models/flow_configuration.dart';
+export 'src/models/flow_status.dart';
+export 'src/bloc/flow_bloc.dart';
+export 'src/controllers/flow_controller.dart';
+export 'src/validators/flow_validators.dart';
