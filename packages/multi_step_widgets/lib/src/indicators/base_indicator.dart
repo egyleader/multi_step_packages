@@ -55,6 +55,12 @@ abstract class StepIndicator extends StatelessWidget {
     return step.title;
   }
 
+  /// Get custom metadata for a step at the given index
+  T? getStepMetadata<T>(int index, String key, [T? defaultValue]) {
+    if (index < 0 || index >= state.steps.length) return defaultValue;
+    return state.steps[index].getValue<T>(key, defaultValue);
+  }
+
   /// Whether a step at the given index can be selected
   bool canSelectStep(int index) {
     if (index == currentStepIndex) return false;

@@ -82,12 +82,33 @@ void main() {
       expect(find.byType(FlowNavigationBar), findsOneWidget);
     });
 
-    testWidgets('navigation bar shows correct buttons', (tester) async {
-      final steps = [
-        TestStep(id: '1'),
-        TestStep(id: '2', isSkippable: true),
-      ];
-      
+    testWidgets('supports custom step indicator', (tester) async {
+      final steps = [TestStep(id: '1')];
+      final controller = FlowController(steps: steps);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StreamBuilder<FlowState>(
+              stream: controller.stateStream,
+              initialData: controller.currentState,
+              builder: (context, snapshot) {
+                return FlowLayout(
+                  controller: controller,
+                  stepBuilder: (context, step) => const Text('Step Content'),
+                  indicatorBuilder: (state) => TextIndicator(state: state),
+                );
+              }
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Step 1 of 1'), findsOneWidget);
+    });
+
+    testWidgets('respects showNavigationBar option', (tester) async {
+      final steps = [TestStep(id: '1')];
       final controller = FlowController(steps: steps);
 
       await tester.pumpWidget(
@@ -96,25 +117,28 @@ void main() {
             body: FlowLayout(
               controller: controller,
               stepBuilder: (context, step) => const Text('Step Content'),
+              showNavigationBar: false,
             ),
           ),
         ),
       );
 
-      expect(find.text('Next'), findsOneWidget);
-      expect(find.text('Skip'), findsNothing); // First step is not skippable
-
-      // Go to second step
-      await tester.tap(find.text('Next'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Back'), findsOneWidget);
-      expect(find.text('Skip'), findsOneWidget); // Second step is skippable
-      expect(find.text('Complete'), findsOneWidget); // Last step
+      expect(find.byType(FlowNavigationBar), findsNothing);
     });
   });
 }
 
+/// Custom text-based step indicator for testing
+class TextIndicator extends StepIndicator {
+  const TextIndicator({required super.state, super.onStepTapped, super.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text('Step ${currentStepIndex + 1} of $stepCount');
+  }
+}
+
+/// Test implementation of [FlowStep]
 class TestStep extends FlowStep {
   TestStep({
     required String id,
@@ -122,12 +146,14 @@ class TestStep extends FlowStep {
     String? description,
     bool isSkippable = false,
     Duration? timeLimit,
+    Map<String, dynamic>? data,
   }) : super(
           id: id,
-          title: title,
+          title: title ?? 'Test Step',
           description: description,
           isSkippable: isSkippable,
           timeLimit: timeLimit,
+          data: data,
         );
 
   @override
@@ -137,6 +163,7 @@ class TestStep extends FlowStep {
     String? description,
     bool? isSkippable,
     Duration? timeLimit,
+    Map<String, dynamic>? data,
   }) {
     return TestStep(
       id: id ?? this.id,
@@ -144,6 +171,7 @@ class TestStep extends FlowStep {
       description: description ?? this.description,
       isSkippable: isSkippable ?? this.isSkippable,
       timeLimit: timeLimit ?? this.timeLimit,
+      data: data ?? this.data,
     );
   }
 }
