@@ -123,8 +123,9 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
   ) async {
     try {
       // Guard conditions
-      if (!state.hasPrevious || _configuration?.allowBackNavigation == false)
+      if (!state.hasPrevious || _configuration?.allowBackNavigation == false) {
         return;
+      }
       final currentStep = state.currentStep;
       if (currentStep == null) return;
 

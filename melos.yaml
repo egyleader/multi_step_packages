@@ -6,3 +6,9 @@ packages:
 ignore:
   # e.g. ignore example apps
   - 'packages/**/example'
+
+scripts:
+ ffmt:
+    exec: dart fix --apply && dart format .
+    description: Fix and format Dart code for all packages
+  
