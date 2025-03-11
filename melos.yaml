@@ -4,7 +4,6 @@ packages:
   - packages/**
 
 ignore:
-  # e.g. ignore example apps
   - 'packages/**/example'
 
 scripts:

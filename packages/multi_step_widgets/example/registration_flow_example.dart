@@ -63,6 +63,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     // Listen for errors
     controller.errorStream.listen((error) {
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('Error: $error')));
     });
@@ -312,12 +313,11 @@ class _AccountDetailsStepState extends State<AccountDetailsStep> {
 class PreferencesStep extends StatefulWidget implements FlowStep {
   PreferencesStep({
     super.key,
-    bool isSkippable = true,
+    this.isSkippable = true,
     Map<String, dynamic>? data,
   }) : id = 'preferences',
        title = 'Preferences',
        description = 'Set your preferences',
-       isSkippable = isSkippable,
        timeLimit = null,
        data = data ?? {};
 

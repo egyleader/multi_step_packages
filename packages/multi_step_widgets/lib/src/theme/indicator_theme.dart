@@ -79,7 +79,7 @@ class StepIndicatorThemeData {
   StepIndicatorThemeData resolve(ColorScheme colorScheme) {
     return copyWith(
       activeColor: activeColor ?? colorScheme.primary,
-      inactiveColor: inactiveColor ?? colorScheme.onSurface.withOpacity(0.38),
+      inactiveColor: inactiveColor ?? colorScheme.onSurface.withAlpha(97),
       completedColor: completedColor ?? colorScheme.primary,
       errorColor: errorColor ?? colorScheme.error,
       labelStyle:
