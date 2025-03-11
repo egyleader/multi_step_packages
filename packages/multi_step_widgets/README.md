@@ -11,6 +11,7 @@ Flutter UI widgets for building multi-step flows with customizable indicators, n
 - **Navigation Controls**: Pre-built navigation buttons and bars
 - **Layouts**: Ready-to-use layouts for common flow patterns
 - **Theming**: Comprehensive theming support for consistent UI
+- **All-in-one Package**: Re-exports all necessary types from multi_step_flow
 
 ## Getting Started
 
@@ -20,8 +21,8 @@ Add multi_step_widgets to your `pubspec.yaml`:
 dependencies:
   flutter:
     sdk: flutter
-  multi_step_widgets: ^0.0.1
-  multi_step_flow: ^1.0.0
+  multi_step_widgets: ^0.2.0
+  # No need to depend on multi_step_flow separately
 ```
 
 Then run:
@@ -29,6 +30,8 @@ Then run:
 ```bash
 flutter pub get
 ```
+
+> **Note:** This package now re-exports all necessary types from `multi_step_flow`, so you don't need to depend on both packages anymore.
 
 ## Usage
 

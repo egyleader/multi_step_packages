@@ -5,7 +5,7 @@ A platform-agnostic Dart package for managing multi-step flows with powerful sta
 ## Features
 
 - **Flexible Step Management**: Define complex multi-step flows with custom step types
-- **Powerful State Management**: Built on bloc pattern for reliable state transitions
+- **Powerful State Management**: Built on bloc 9.0.0 for reliable state transitions
 - **Validation Support**: Built-in validation hooks for implementing custom validation rules
 - **Lifecycle Events**: Step-specific lifecycle events (onEnter, onExit, onSkip)
 - **Configuration Options**: Customize navigation behavior, validation timing, and more
@@ -17,7 +17,7 @@ Add multi_step_flow to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  multi_step_flow: ^1.0.0
+  multi_step_flow: ^0.2.0
 ```
 
 Then run:
@@ -25,6 +25,8 @@ Then run:
 ```bash
 dart pub get
 ```
+
+> **Note:** For Flutter users, consider using `multi_step_widgets` package instead, which re-exports all the necessary types from this package.
 
 ## Usage
 
