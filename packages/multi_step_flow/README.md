@@ -2,6 +2,8 @@
 
 A platform-agnostic Dart package for managing multi-step flows with powerful state management, validation, and customization options.
 
+> **🚨 Flutter Users**: If you're building a Flutter application, use the [`multi_step_widgets`](https://pub.dev/packages/multi_step_widgets) package instead. It includes all the functionality from this package plus Flutter UI components.
+
 ## Features
 
 - **Flexible Step Management**: Define complex multi-step flows with custom step types
@@ -173,4 +175,20 @@ Check the `/example` folder for more detailed examples including:
 
 ## Additional Information
 
-This package is designed to work seamlessly with the `multi_step_widgets` package for Flutter UI components, but can be used independently in any Dart project.
+This package provides the core state management and flow control functionality. It can be used in any Dart project that needs multi-step flow management, with or without a UI.
+
+### Package Selection Guide
+
+1. **Flutter Applications**:
+   - Use the `multi_step_widgets` package instead of this one
+   - The widgets package already includes all functionality from this package
+   - You don't need to depend on both packages
+
+2. **Pure Dart Applications**:
+   - Use this package directly
+   - Perfect for backend services, CLI tools, or any non-Flutter Dart project
+   - Provides all the flow management functionality without UI dependencies
+
+### Note on Package Dependencies
+
+If you're already using `multi_step_widgets`, you don't need to add this package to your dependencies as all its functionality is re-exported through the widgets package.

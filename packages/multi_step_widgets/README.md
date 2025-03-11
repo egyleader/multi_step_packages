@@ -1,6 +1,8 @@
 # multi_step_widgets
 
-Flutter UI widgets for building multi-step flows with customizable indicators, navigation controls, and layouts. Designed to work seamlessly with the multi_step_flow package.
+Flutter UI widgets for building multi-step flows with customizable indicators, navigation controls, and layouts.
+
+> **✨ All-in-One Solution**: This package includes everything you need - both UI components and core flow management functionality. You don't need to install `multi_step_flow` separately.
 
 ## Features
 
@@ -39,7 +41,6 @@ flutter pub get
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:multi_step_flow/multi_step_flow.dart';
 import 'package:multi_step_widgets/multi_step_widgets.dart';
 
 class MyFlowScreen extends StatefulWidget {
@@ -188,4 +189,12 @@ Check the `/example` folder for complete examples including:
 
 ## Additional Information
 
-This package works best when combined with `multi_step_flow` for state management, but the UI components can be used with any step-based flow logic.
+This package includes all the necessary types and functionality from `multi_step_flow` package. You do not need to depend on `multi_step_flow` separately as all its components (FlowController, FlowStep, etc.) are re-exported through this package.
+
+This package provides both:
+1. Flow state management (through the included multi_step_flow functionality)
+2. Ready-to-use Flutter UI components for building multi-step interfaces
+
+For a simpler setup:
+- If you're building a Flutter app, use this package only
+- If you're building a pure Dart application (no Flutter), use the `multi_step_flow` package directly

@@ -25,12 +25,9 @@ export 'package:multi_step_flow/multi_step_flow.dart'
         FlowStep,
         FlowConfiguration,
         FlowStatus,
-        
         // Controllers
         FlowController,
-        
         // BLoC
         FlowBloc,
-        
         // Validators
         FlowValidators;
