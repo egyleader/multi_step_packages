@@ -161,14 +161,14 @@ packages:
       path: "../../multi_step_flow"
       relative: true
     source: path
-    version: "0.1.0+1"
+    version: "0.2.0"
   multi_step_widgets:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.1.0+1"
+    version: "0.2.0"
   path:
     dependency: transitive
     description:
