@@ -20,8 +20,13 @@ class FlowLayout extends StatelessWidget {
     this.showIndicator = true,
     this.showNavigationBar = true,
     this.physics = const AlwaysScrollableScrollPhysics(),
-    this.padding = const EdgeInsets.all(16.0),
+    this.contentPadding = const EdgeInsets.all(16.0),
+    this.indicatorPadding = const EdgeInsets.all(16.0),
     this.transitionBuilder,
+    this.pageController,
+    this.scrollDirection = FlowScrollDirection.horizontal,
+    this.customTransitionDuration,
+    this.customTransitionCurve,
   });
 
   /// Controller for managing the flow state
@@ -49,10 +54,25 @@ class FlowLayout extends StatelessWidget {
   final ScrollPhysics physics;
 
   /// Padding around the step content
-  final EdgeInsets padding;
+  final EdgeInsets contentPadding;
+  
+  /// Padding around the indicator
+  final EdgeInsets indicatorPadding;
 
   /// Custom transition builder
   final Widget Function(BuildContext, Widget, Animation<double>)? transitionBuilder;
+  
+  /// Optional custom page controller
+  final PageController? pageController;
+  
+  /// Direction of flow scrolling
+  final FlowScrollDirection scrollDirection;
+  
+  /// Custom transition duration
+  final Duration? customTransitionDuration;
+  
+  /// Custom transition curve
+  final Curve? customTransitionCurve;
 
   @override
   Widget build(BuildContext context) {
@@ -75,10 +95,15 @@ class FlowLayout extends StatelessWidget {
                            theme: theme?.stepIndicatorTheme ?? 
                                  const StepIndicatorThemeData(),
                          ),
-                showIndicator: showIndicator,
+                indicatorPosition: showIndicator ? IndicatorPosition.top : IndicatorPosition.none,
                 physics: physics,
-                padding: padding,
+                contentPadding: contentPadding,
+                indicatorPadding: indicatorPadding,
                 transitionBuilder: transitionBuilder,
+                pageController: pageController,
+                scrollDirection: scrollDirection,
+                customTransitionDuration: customTransitionDuration,
+                customTransitionCurve: customTransitionCurve,
               ),
             ),
             if (showNavigationBar)
