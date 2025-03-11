@@ -1,8 +1,5 @@
 name: multi_step
 environment:
   sdk: ^3.7.0
-workspace:
-  - packages/multi_step_flow
-  - packages/multi_step_widgets
 dev_dependencies:
   melos: ^6.3.2
