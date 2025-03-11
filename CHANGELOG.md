@@ -15,6 +15,27 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`multi_step_widgets` - `v0.2.0`](#multi_step_widgets---v020)
+
+---
+
+#### `multi_step_widgets` - `v0.2.0`
+
+ - y
+
+
+## 2025-03-11
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`multi_step_flow` - `v0.2.0`](#multi_step_flow---v020)
  - [`multi_step_widgets` - `v0.1.0+2`](#multi_step_widgets---v0102)
 
