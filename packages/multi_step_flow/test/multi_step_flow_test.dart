@@ -44,17 +44,17 @@ void main() {
     test('complete() changes status to completed', () async {
       // Create a completer to wait for status change
       final completer = Completer<void>();
-      
+
       // Listen for completed status
       final subscription = controller.stateStream.listen((state) {
         if (state.status == FlowStatus.completed && !completer.isCompleted) {
           completer.complete();
         }
       });
-      
+
       // Trigger completion
       controller.complete();
-      
+
       // Wait for completion with timeout
       await completer.future.timeout(
         const Duration(seconds: 1),
@@ -62,9 +62,9 @@ void main() {
           // If we time out, we'll fail the test below
         },
       );
-      
+
       await subscription.cancel();
-      
+
       // Now verify the status
       expect(controller.currentState.status, FlowStatus.completed);
     });
@@ -72,7 +72,7 @@ void main() {
     test('reset() restores initial state', () {
       // Because reset() is a synchronous operation we can test it directly
       controller.reset();
-      
+
       // Verify reset state
       expect(controller.currentStepIndex, 0);
       expect(controller.currentState.validatedSteps, isEmpty);
@@ -83,7 +83,7 @@ void main() {
       // Setup stream listener
       final statesReceived = <FlowState>[];
       final completed = Completer<void>();
-      
+
       final subscription = controller.stateStream.listen((state) {
         statesReceived.add(state);
         if (state.status == FlowStatus.completed && !completed.isCompleted) {
@@ -93,15 +93,15 @@ void main() {
 
       // Trigger a state change
       controller.complete();
-      
+
       // Wait for state change with timeout
       await completed.future.timeout(
-        const Duration(seconds: 1), 
+        const Duration(seconds: 1),
         onTimeout: () {
           // This will fail the test if it times out
         },
       );
-      
+
       // Should have received state updates
       expect(statesReceived.isNotEmpty, true);
       expect(statesReceived.last.status, FlowStatus.completed);
@@ -125,28 +125,28 @@ void main() {
     test('defaults to valid in validate method', () async {
       final step = TestStep(id: 'test');
       expect(await step.validate(), false); // Default is false in TestStep
-      
+
       final validStep = TestStep(id: 'valid', shouldValidate: true);
       expect(await validStep.validate(), true);
     });
 
     test('lifecycle hooks can be overridden', () async {
       final events = <String>[];
-      
+
       final step = TestStep(
         id: 'test',
         onEnterFn: () => events.add('enter'),
         onExitFn: () => events.add('exit'),
         onSkipFn: () => events.add('skip'),
       );
-      
+
       await step.onEnter();
       await step.onExit();
       await step.onSkip();
-      
+
       expect(events, ['enter', 'exit', 'skip']);
     });
-    
+
     test('copyWith preserves all properties when none specified', () {
       final original = TestStep(
         id: 'test',
@@ -156,9 +156,9 @@ void main() {
         timeLimit: Duration(seconds: 30),
         data: {'key': 'value'},
       );
-      
+
       final copy = original.copyWith();
-      
+
       expect(copy.id, original.id);
       expect(copy.title, original.title);
       expect(copy.description, original.description);
@@ -171,28 +171,21 @@ void main() {
 
 class TestStep extends FlowStep {
   TestStep({
-    required String id,
+    required super.id,
     String? title,
-    String? description,
-    bool isSkippable = false,
-    Duration? timeLimit,
-    Map<String, dynamic>? data,
+    super.description,
+    super.isSkippable,
+    super.timeLimit,
+    super.data,
     this.shouldValidate = false,
     this.onEnterFn,
     this.onExitFn,
     this.onSkipFn,
-  }) : super(
-          id: id,
-          title: title ?? 'Test Step',
-          description: description,
-          isSkippable: isSkippable,
-          timeLimit: timeLimit,
-          data: data,
-        );
+  }) : super(title: title ?? 'Test Step');
 
   final bool shouldValidate;
   final Function? onEnterFn;
-  final Function? onExitFn; 
+  final Function? onExitFn;
   final Function? onSkipFn;
 
   @override

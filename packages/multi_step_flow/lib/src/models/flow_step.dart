@@ -53,7 +53,7 @@ abstract class FlowStep {
   /// Return true if the step is valid, or false if it's invalid.
   ///
   /// By default, all steps are considered valid.
-  /// 
+  ///
   /// Example:
   /// ```dart
   /// @override

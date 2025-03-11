@@ -12,10 +12,10 @@ typedef StepBuilder = Widget Function(BuildContext context, FlowStep step);
 enum IndicatorPosition {
   /// Place the indicator above the content
   top,
-  
+
   /// Place the indicator below the content
   bottom,
-  
+
   /// Don't show the indicator
   none,
 }
@@ -24,7 +24,7 @@ enum IndicatorPosition {
 enum FlowScrollDirection {
   /// Horizontal scrolling between steps
   horizontal,
-  
+
   /// Vertical scrolling between steps
   vertical,
 }
@@ -79,49 +79,51 @@ class FlowBuilder extends StatefulWidget {
 
   /// Padding around the step content
   final EdgeInsets contentPadding;
-  
+
   /// Padding around the indicator
   final EdgeInsets indicatorPadding;
 
   /// Custom transition builder
-  final Widget Function(BuildContext, Widget, Animation<double>)? transitionBuilder;
-  
+  final Widget Function(BuildContext, Widget, Animation<double>)?
+  transitionBuilder;
+
   /// Optional custom page controller
   final PageController? pageController;
-  
+
   /// Direction of flow scrolling
   final FlowScrollDirection scrollDirection;
-  
+
   /// Callback when the page changes
   final ValueChanged<int>? onPageChanged;
-  
+
   /// The fraction of the viewport that each page should occupy
   final double viewportFraction;
-  
+
   /// Custom transition duration
   final Duration? customTransitionDuration;
-  
+
   /// Custom transition curve
   final Curve? customTransitionCurve;
-  
+
   /// Whether to maintain state for all steps, even when not visible
   final bool maintainState;
-  
+
   /// Whether the page view should snap to page boundaries
   final bool pageSnapping;
-  
+
   /// Whether to reverse the scroll direction
   final bool reverse;
-  
+
   /// Custom layout builder - gives full control over the layout
-  final Widget Function(BuildContext context, Widget indicator, Widget pager)? customLayout;
-  
+  final Widget Function(BuildContext context, Widget indicator, Widget pager)?
+  customLayout;
+
   /// Controls how drag start behavior is handled
   final DragStartBehavior dragStartBehavior;
-  
+
   /// How content should be clipped
   final Clip clipBehavior;
-  
+
   /// Whether the FlowBuilder should handle page changes itself
   final bool shouldHandlePage;
 
@@ -141,11 +143,13 @@ class _FlowBuilderState extends State<FlowBuilder> {
   @override
   void initState() {
     super.initState();
-    _pageController = widget.pageController ?? PageController(
-      initialPage: widget.controller.currentState.currentStepIndex,
-      viewportFraction: widget.viewportFraction,
-      keepPage: widget.keepPage,
-    );
+    _pageController =
+        widget.pageController ??
+        PageController(
+          initialPage: widget.controller.currentState.currentStepIndex,
+          viewportFraction: widget.viewportFraction,
+          keepPage: widget.keepPage,
+        );
 
     widget.controller.stateStream.listen(_handleStateChange);
   }
@@ -156,9 +160,10 @@ class _FlowBuilderState extends State<FlowBuilder> {
       if (state.currentStepIndex != _pageController.page?.round()) {
         _pageController.animateToPage(
           state.currentStepIndex,
-          duration: widget.customTransitionDuration ?? 
-                    widget.theme?.transitionDuration ?? 
-                    const Duration(milliseconds: 300),
+          duration:
+              widget.customTransitionDuration ??
+              widget.theme?.transitionDuration ??
+              const Duration(milliseconds: 300),
           curve: widget.customTransitionCurve ?? Curves.easeInOut,
         );
       }
@@ -184,10 +189,10 @@ class _FlowBuilderState extends State<FlowBuilder> {
         initialData: widget.controller.currentState,
         builder: (context, snapshot) {
           final state = snapshot.data!;
-          
+
           // Build indicator if needed
           Widget? indicatorWidget;
-          if (widget.indicatorPosition != IndicatorPosition.none && 
+          if (widget.indicatorPosition != IndicatorPosition.none &&
               widget.indicator != null &&
               state.steps.isNotEmpty) {
             indicatorWidget = Padding(
@@ -195,19 +200,21 @@ class _FlowBuilderState extends State<FlowBuilder> {
               child: widget.indicator!,
             );
           }
-          
+
           // Build page view
           final pagerWidget = Expanded(
             child: PageView.builder(
               controller: _pageController,
               physics: widget.physics,
-              scrollDirection: widget.scrollDirection == FlowScrollDirection.horizontal
-                  ? Axis.horizontal
-                  : Axis.vertical,
+              scrollDirection:
+                  widget.scrollDirection == FlowScrollDirection.horizontal
+                      ? Axis.horizontal
+                      : Axis.vertical,
               itemCount: state.steps.length,
               onPageChanged: (index) {
                 widget.onPageChanged?.call(index);
-                if (widget.shouldHandlePage && index != state.currentStepIndex) {
+                if (widget.shouldHandlePage &&
+                    index != state.currentStepIndex) {
                   widget.controller.goToStep(index);
                 }
               },
@@ -215,7 +222,7 @@ class _FlowBuilderState extends State<FlowBuilder> {
               pageSnapping: widget.pageSnapping,
               dragStartBehavior: widget.dragStartBehavior,
               clipBehavior: widget.clipBehavior,
-              allowImplicitScrolling: widget.maintainState, 
+              allowImplicitScrolling: widget.maintainState,
               restorationId: widget.restorationId,
               reverse: widget.reverse,
               itemBuilder: (context, index) {
@@ -224,13 +231,17 @@ class _FlowBuilderState extends State<FlowBuilder> {
                   padding: widget.contentPadding,
                   child: widget.stepBuilder(context, step),
                 );
-                
+
                 if (widget.transitionBuilder != null) {
                   return PageTransitionSwitcher(
                     duration: widget.customTransitionDuration,
                     child: child,
                     transitionBuilder: (context, child, animation) {
-                      return widget.transitionBuilder!(context, child, animation);
+                      return widget.transitionBuilder!(
+                        context,
+                        child,
+                        animation,
+                      );
                     },
                   );
                 }
@@ -239,16 +250,16 @@ class _FlowBuilderState extends State<FlowBuilder> {
               },
             ),
           );
-          
+
           // If custom layout provided, use it
           if (widget.customLayout != null) {
             return widget.customLayout!(
-              context, 
-              indicatorWidget ?? const SizedBox.shrink(), 
-              pagerWidget
+              context,
+              indicatorWidget ?? const SizedBox.shrink(),
+              pagerWidget,
             );
           }
-          
+
           // Otherwise use default layout based on indicator position
           if (widget.indicatorPosition == IndicatorPosition.bottom) {
             return Column(
@@ -305,8 +316,13 @@ class PageTransitionSwitcher extends StatelessWidget {
   final Widget child;
 
   /// Builder for the transition animation
-  final Widget Function(BuildContext context, Widget child, Animation<double> animation) transitionBuilder;
-  
+  final Widget Function(
+    BuildContext context,
+    Widget child,
+    Animation<double> animation,
+  )
+  transitionBuilder;
+
   /// Duration for the transition
   final Duration? duration;
 
@@ -314,10 +330,7 @@ class PageTransitionSwitcher extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
       duration: duration ?? FlowTheme.of(context).transitionDuration,
-      child: KeyedSubtree(
-        key: ValueKey<Widget>(child),
-        child: child,
-      ),
+      child: KeyedSubtree(key: ValueKey<Widget>(child), child: child),
       transitionBuilder: (Widget child, Animation<double> animation) {
         return transitionBuilder(context, child, animation);
       },

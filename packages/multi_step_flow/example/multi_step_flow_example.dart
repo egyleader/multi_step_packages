@@ -21,8 +21,8 @@ void main() {
       // Example of using step data
       data: {
         'showTermsCheckbox': true,
-        'requiredFields': ['name', 'email']
-      }
+        'requiredFields': ['name', 'email'],
+      },
     ),
   ];
 
@@ -55,17 +55,17 @@ Future<void> performFlow(FlowController controller) async {
     // Move to next step with async API
     await controller.next();
     print('Moved to next step');
-    
+
     // Validate the current step
     await controller.validate(true);
     print('Validated current step');
-    
+
     // Skip a step if it's skippable
     if (controller.currentStep!.isSkippable) {
       await controller.skip();
       print('Skipped optional step');
     }
-    
+
     // Complete the flow
     await controller.complete();
     print('Flow completed');
@@ -81,20 +81,13 @@ Future<void> performFlow(FlowController controller) async {
 /// Example custom step implementation
 class RegistrationStep extends FlowStep {
   RegistrationStep({
-    required String id,
-    String? title,
-    String? description,
-    bool isSkippable = false,
-    Duration? timeLimit,
-    Map<String, dynamic>? data,
-  }) : super(
-          id: id,
-          title: title,
-          description: description,
-          isSkippable: isSkippable,
-          timeLimit: timeLimit,
-          data: data,
-        );
+    required super.id,
+    super.title,
+    super.description,
+    super.isSkippable,
+    super.timeLimit,
+    super.data,
+  });
 
   final _emailInput = const EmailInput.pure();
   final _passwordInput = const PasswordInput.pure();
@@ -103,15 +96,16 @@ class RegistrationStep extends FlowStep {
   Future<bool> validate() async {
     // Example of accessing step data to determine validation rules
     final requiredFields = getValue<List<dynamic>>('requiredFields') ?? [];
-    
+
     final emailValid = _emailInput.validator(_emailInput.value) == null;
-    final passwordValid = _passwordInput.validator(_passwordInput.value) == null;
-    
+    final passwordValid =
+        _passwordInput.validator(_passwordInput.value) == null;
+
     // If no required fields specified, use default validation
     if (requiredFields.isEmpty) {
       return emailValid && passwordValid;
     }
-    
+
     // Otherwise, validate only required fields
     bool isValid = true;
     if (requiredFields.contains('email')) {
@@ -120,7 +114,7 @@ class RegistrationStep extends FlowStep {
     if (requiredFields.contains('password')) {
       isValid = isValid && passwordValid;
     }
-    
+
     return isValid;
   }
 

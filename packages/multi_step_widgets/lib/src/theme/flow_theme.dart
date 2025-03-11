@@ -52,8 +52,11 @@ class FlowTheme extends ThemeExtension<FlowTheme> {
     if (other is! FlowTheme) return this;
     return FlowTheme(
       stepIndicatorTheme: other.stepIndicatorTheme,
-      navigationBarHeight: lerpDouble(navigationBarHeight, other.navigationBarHeight, t) ?? navigationBarHeight,
-      navigationBarPadding: EdgeInsets.lerp(navigationBarPadding, other.navigationBarPadding, t)!,
+      navigationBarHeight:
+          lerpDouble(navigationBarHeight, other.navigationBarHeight, t) ??
+          navigationBarHeight,
+      navigationBarPadding:
+          EdgeInsets.lerp(navigationBarPadding, other.navigationBarPadding, t)!,
       transitionDuration: transitionDuration,
       buttonTheme: t < 0.5 ? buttonTheme : other.buttonTheme,
     );

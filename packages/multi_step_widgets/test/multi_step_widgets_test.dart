@@ -6,36 +6,22 @@ import 'package:multi_step_widgets/multi_step_widgets.dart';
 void main() {
   group('DotsIndicator', () {
     testWidgets('renders correct number of dots', (tester) async {
-      final steps = [
-        TestStep(id: '1'),
-        TestStep(id: '2'),
-        TestStep(id: '3'),
-      ];
+      final steps = [TestStep(id: '1'), TestStep(id: '2'), TestStep(id: '3')];
 
       final state = FlowState(steps: steps);
-      
+
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: DotsIndicator(state: state),
-          ),
-        ),
+        MaterialApp(home: Scaffold(body: DotsIndicator(state: state))),
       );
 
       expect(find.byType(AnimatedContainer), findsNWidgets(3));
     });
 
     testWidgets('active dot has different color', (tester) async {
-      final steps = [
-        TestStep(id: '1'),
-        TestStep(id: '2'),
-      ];
+      final steps = [TestStep(id: '1'), TestStep(id: '2')];
 
-      final state = FlowState(
-        steps: steps,
-        currentStepIndex: 1,
-      );
-      
+      final state = FlowState(steps: steps, currentStepIndex: 1);
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -50,7 +36,9 @@ void main() {
         ),
       );
 
-      final containers = tester.widgetList<AnimatedContainer>(find.byType(AnimatedContainer));
+      final containers = tester.widgetList<AnimatedContainer>(
+        find.byType(AnimatedContainer),
+      );
       final firstDot = containers.first;
       final activeDot = containers.last;
 
@@ -98,7 +86,7 @@ void main() {
                   stepBuilder: (context, step) => const Text('Step Content'),
                   indicatorBuilder: (state) => TextIndicator(state: state),
                 );
-              }
+              },
             ),
           ),
         ),
@@ -130,7 +118,12 @@ void main() {
 
 /// Custom text-based step indicator for testing
 class TextIndicator extends StepIndicator {
-  const TextIndicator({required super.state, super.onStepTapped, super.theme});
+  const TextIndicator({
+    super.key,
+    required super.state,
+    super.onStepTapped,
+    super.theme,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -140,21 +133,14 @@ class TextIndicator extends StepIndicator {
 
 /// Test implementation of [FlowStep]
 class TestStep extends FlowStep {
-  TestStep({
-    required String id,
+  const TestStep({
+    required super.id,
     String? title,
-    String? description,
-    bool isSkippable = false,
-    Duration? timeLimit,
-    Map<String, dynamic>? data,
-  }) : super(
-          id: id,
-          title: title ?? 'Test Step',
-          description: description,
-          isSkippable: isSkippable,
-          timeLimit: timeLimit,
-          data: data,
-        );
+    super.description,
+    super.isSkippable,
+    super.timeLimit,
+    super.data,
+  }) : super(title: title ?? 'Test Step');
 
   @override
   FlowStep copyWith({

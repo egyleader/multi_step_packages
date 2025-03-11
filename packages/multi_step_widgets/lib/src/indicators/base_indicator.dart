@@ -65,11 +65,11 @@ abstract class StepIndicator extends StatelessWidget {
   bool canSelectStep(int index) {
     if (index == currentStepIndex) return false;
     if (index < currentStepIndex) return true;
-    
+
     // Can only move forward to next step if current step is validated or skipped
     if (index == currentStepIndex + 1) {
       return state.validatedSteps.contains(state.currentStep?.id) ||
-             state.skippedSteps.contains(state.currentStep?.id);
+          state.skippedSteps.contains(state.currentStep?.id);
     }
 
     return false;

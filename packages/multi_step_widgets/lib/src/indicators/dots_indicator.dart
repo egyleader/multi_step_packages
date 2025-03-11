@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:multi_step_flow/multi_step_flow.dart';
 
 import '../theme/indicator_theme.dart';
 import 'base_indicator.dart';
@@ -27,8 +26,9 @@ class DotsIndicator extends StepIndicator {
 
   @override
   Widget build(BuildContext context) {
-    final resolvedTheme = this.theme?.resolve(Theme.of(context).colorScheme) ?? 
-                 const StepIndicatorThemeData().resolve(Theme.of(context).colorScheme);
+    final resolvedTheme =
+        theme?.resolve(Theme.of(context).colorScheme) ??
+        const StepIndicatorThemeData().resolve(Theme.of(context).colorScheme);
 
     final dots = List.generate(
       stepCount,
@@ -37,18 +37,22 @@ class DotsIndicator extends StepIndicator {
 
     return axis == Axis.horizontal
         ? Row(
-            mainAxisAlignment: mainAxisAlignment,
-            mainAxisSize: mainAxisSize,
-            children: _addSpacing(dots, resolvedTheme),
-          )
+          mainAxisAlignment: mainAxisAlignment,
+          mainAxisSize: mainAxisSize,
+          children: _addSpacing(dots, resolvedTheme),
+        )
         : Column(
-            mainAxisAlignment: mainAxisAlignment,
-            mainAxisSize: mainAxisSize,
-            children: _addSpacing(dots, resolvedTheme),
-          );
+          mainAxisAlignment: mainAxisAlignment,
+          mainAxisSize: mainAxisSize,
+          children: _addSpacing(dots, resolvedTheme),
+        );
   }
 
-  Widget _buildDot(BuildContext context, int index, StepIndicatorThemeData theme) {
+  Widget _buildDot(
+    BuildContext context,
+    int index,
+    StepIndicatorThemeData theme,
+  ) {
     final isActive = index == currentStepIndex;
     final color = getStepColor(context, index);
 
@@ -61,26 +65,28 @@ class DotsIndicator extends StepIndicator {
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(theme.size / 2),
-          border: Border.all(
-            color: color,
-            width: theme.strokeWidth,
-          ),
+          border: Border.all(color: color, width: theme.strokeWidth),
         ),
       ),
     );
   }
 
-  List<Widget> _addSpacing(List<Widget> children, StepIndicatorThemeData theme) {
+  List<Widget> _addSpacing(
+    List<Widget> children,
+    StepIndicatorThemeData theme,
+  ) {
     if (children.isEmpty) return children;
 
     final spacedChildren = <Widget>[];
     for (var i = 0; i < children.length; i++) {
       spacedChildren.add(children[i]);
       if (i < children.length - 1) {
-        spacedChildren.add(SizedBox(
-          width: axis == Axis.horizontal ? theme.spacing : 0,
-          height: axis == Axis.vertical ? theme.spacing : 0,
-        ));
+        spacedChildren.add(
+          SizedBox(
+            width: axis == Axis.horizontal ? theme.spacing : 0,
+            height: axis == Axis.vertical ? theme.spacing : 0,
+          ),
+        );
       }
     }
 

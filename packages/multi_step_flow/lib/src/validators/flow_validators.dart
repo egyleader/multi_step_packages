@@ -24,9 +24,7 @@ class EmailInput extends FlowInput<String> {
   const EmailInput.pure() : super.pure('');
   const EmailInput.dirty([super.value = '']) : super.dirty();
 
-  static final _emailRegExp = RegExp(
-    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-  );
+  static final _emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
 
   @override
   String? validator(String value) {

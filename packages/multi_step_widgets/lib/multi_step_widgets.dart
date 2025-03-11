@@ -1,4 +1,4 @@
-library multi_step_widgets;
+library;
 
 // Flow building
 export 'src/flow_builder.dart';

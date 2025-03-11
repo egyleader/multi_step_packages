@@ -24,7 +24,7 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
 
   /// Flow configuration options
   FlowConfiguration? _configuration;
-  
+
   /// Timer for auto-advancing timed steps
   Timer? _stepTimer;
 
@@ -32,25 +32,22 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
   void _onFlowInitialized(FlowInitialized event, Emitter<FlowState> emit) {
     try {
       _configuration = event.configuration;
-      
+
       // Initial state should have status = initial
-      emit(FlowState(
-        steps: event.steps,
-        status: FlowStatus.initial,
-      ));
-      
+      emit(FlowState(steps: event.steps, status: FlowStatus.initial));
+
       // Start timer if needed
       _startStepTimerIfNeeded(state.currentStep);
     } catch (error) {
-      emit(state.copyWith(
-        status: FlowStatus.error, 
-        error: error.toString(),
-      ));
+      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
     }
   }
 
   /// Handles moving to the next step
-  Future<void> _onFlowNextPressed(FlowNextPressed event, Emitter<FlowState> emit) async {
+  Future<void> _onFlowNextPressed(
+    FlowNextPressed event,
+    Emitter<FlowState> emit,
+  ) async {
     try {
       // Guard conditions
       if (!state.hasNext) return;
@@ -58,12 +55,11 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
       if (currentStep == null) return;
 
       // Validate current step if configured and not already validated
-      if (_configuration?.validateOnStepChange == true && 
+      if (_configuration?.validateOnStepChange == true &&
           !state.isCurrentStepValidated &&
           !state.isCurrentStepSkipped) {
-        
         emit(state.copyWith(status: FlowStatus.validating));
-        
+
         // Perform the validation
         bool isValid;
         try {
@@ -72,17 +68,19 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
           emit(state.copyWith(status: FlowStatus.error, error: e.toString()));
           return;
         }
-        
+
         if (!isValid) {
           emit(state.copyWith(status: FlowStatus.invalid));
           return;
         }
-        
+
         // Mark step as validated
-        emit(state.copyWith(
-          status: FlowStatus.valid,
-          validatedSteps: {...state.validatedSteps, currentStep.id},
-        ));
+        emit(
+          state.copyWith(
+            status: FlowStatus.valid,
+            validatedSteps: {...state.validatedSteps, currentStep.id},
+          ),
+        );
       }
 
       // Perform exit actions for current step
@@ -92,7 +90,7 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
         emit(state.copyWith(status: FlowStatus.error, error: e.toString()));
         return;
       }
-      
+
       // Cancel any running timer
       _cancelStepTimer();
 
@@ -110,23 +108,23 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
         emit(nextState.copyWith(status: FlowStatus.error, error: e.toString()));
         return;
       }
-      
+
       // Start timer for next step if needed
       _startStepTimerIfNeeded(nextState.currentStep);
-      
     } catch (error) {
-      emit(state.copyWith(
-        status: FlowStatus.error, 
-        error: error.toString(),
-      ));
+      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
     }
   }
 
   /// Handles moving to the previous step
-  Future<void> _onFlowPreviousPressed(FlowPreviousPressed event, Emitter<FlowState> emit) async {
+  Future<void> _onFlowPreviousPressed(
+    FlowPreviousPressed event,
+    Emitter<FlowState> emit,
+  ) async {
     try {
       // Guard conditions
-      if (!state.hasPrevious || _configuration?.allowBackNavigation == false) return;
+      if (!state.hasPrevious || _configuration?.allowBackNavigation == false)
+        return;
       final currentStep = state.currentStep;
       if (currentStep == null) return;
 
@@ -137,7 +135,7 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
         emit(state.copyWith(status: FlowStatus.error, error: e.toString()));
         return;
       }
-      
+
       // Cancel any running timer
       _cancelStepTimer();
 
@@ -155,20 +153,19 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
         emit(nextState.copyWith(status: FlowStatus.error, error: e.toString()));
         return;
       }
-      
+
       // Start timer for previous step if needed
       _startStepTimerIfNeeded(nextState.currentStep);
-      
     } catch (error) {
-      emit(state.copyWith(
-        status: FlowStatus.error, 
-        error: error.toString(),
-      ));
+      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
     }
   }
 
   /// Handles skipping the current step
-  Future<void> _onFlowStepSkipped(FlowStepSkipped event, Emitter<FlowState> emit) async {
+  Future<void> _onFlowStepSkipped(
+    FlowStepSkipped event,
+    Emitter<FlowState> emit,
+  ) async {
     try {
       // Guard conditions
       final currentStep = state.currentStep;
@@ -181,7 +178,7 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
         emit(state.copyWith(status: FlowStatus.error, error: e.toString()));
         return;
       }
-      
+
       // Cancel any running timer
       _cancelStepTimer();
 
@@ -192,11 +189,13 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
       }
 
       // Mark step as skipped and move to next step
-      emit(state.copyWith(
-        skippedSteps: {...state.skippedSteps, currentStep.id},
-        currentStepIndex: state.currentStepIndex + 1,
-        status: FlowStatus.inProgress,
-      ));
+      emit(
+        state.copyWith(
+          skippedSteps: {...state.skippedSteps, currentStep.id},
+          currentStepIndex: state.currentStepIndex + 1,
+          status: FlowStatus.inProgress,
+        ),
+      );
 
       // Perform enter actions for next step
       try {
@@ -205,15 +204,11 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
         emit(state.copyWith(status: FlowStatus.error, error: e.toString()));
         return;
       }
-      
+
       // Start timer for next step if needed
       _startStepTimerIfNeeded(state.currentStep);
-      
     } catch (error) {
-      emit(state.copyWith(
-        status: FlowStatus.error, 
-        error: error.toString(),
-      ));
+      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
     }
   }
 
@@ -226,10 +221,12 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
 
       if (event.isValid) {
         // Mark step as validated
-        emit(state.copyWith(
-          status: FlowStatus.valid,
-          validatedSteps: {...state.validatedSteps, currentStep.id},
-        ));
+        emit(
+          state.copyWith(
+            status: FlowStatus.valid,
+            validatedSteps: {...state.validatedSteps, currentStep.id},
+          ),
+        );
 
         // Auto-advance if configured
         if (_configuration?.autoAdvanceOnValidation == true && state.hasNext) {
@@ -239,15 +236,15 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
         emit(state.copyWith(status: FlowStatus.invalid));
       }
     } catch (error) {
-      emit(state.copyWith(
-        status: FlowStatus.error, 
-        error: error.toString(),
-      ));
+      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
     }
   }
 
   /// Handles timer completion for timed steps
-  Future<void> _onFlowStepTimerCompleted(FlowStepTimerCompleted event, Emitter<FlowState> emit) async {
+  Future<void> _onFlowStepTimerCompleted(
+    FlowStepTimerCompleted event,
+    Emitter<FlowState> emit,
+  ) async {
     try {
       if (!state.hasNext) {
         await _tryCompleteFlow(emit);
@@ -256,15 +253,15 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
 
       add(const FlowNextPressed());
     } catch (error) {
-      emit(state.copyWith(
-        status: FlowStatus.error, 
-        error: error.toString(),
-      ));
+      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
     }
   }
 
   /// Handles direct navigation to a specific step
-  Future<void> _onFlowStepSelected(FlowStepSelected event, Emitter<FlowState> emit) async {
+  Future<void> _onFlowStepSelected(
+    FlowStepSelected event,
+    Emitter<FlowState> emit,
+  ) async {
     try {
       // Guard conditions
       if (event.index < 0 || event.index >= state.steps.length) return;
@@ -278,7 +275,7 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
         emit(state.copyWith(status: FlowStatus.error, error: e.toString()));
         return;
       }
-      
+
       // Cancel any running timer
       _cancelStepTimer();
 
@@ -296,31 +293,24 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
         emit(nextState.copyWith(status: FlowStatus.error, error: e.toString()));
         return;
       }
-      
+
       // Start timer for selected step if needed
       _startStepTimerIfNeeded(nextState.currentStep);
-      
     } catch (error) {
-      emit(state.copyWith(
-        status: FlowStatus.error, 
-        error: error.toString(),
-      ));
+      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
     }
   }
 
   /// Handles error reporting
   void _onFlowErrorOccurred(FlowErrorOccurred event, Emitter<FlowState> emit) {
-    emit(state.copyWith(
-      status: FlowStatus.error,
-      error: event.error,
-    ));
+    emit(state.copyWith(status: FlowStatus.error, error: event.error));
   }
 
   /// Resets the flow to its initial state
   Future<void> _onFlowReset(FlowReset event, Emitter<FlowState> emit) async {
     try {
       _cancelStepTimer();
-      
+
       // Reset to first step with clean state
       final firstState = FlowState(
         steps: state.steps,
@@ -331,26 +321,28 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
       // Perform enter actions for first step
       try {
         await firstState.currentStep?.onEnter();
-        
+
         // Update status to inProgress after successful onEnter
         emit(firstState.copyWith(status: FlowStatus.inProgress));
       } catch (e) {
-        emit(firstState.copyWith(status: FlowStatus.error, error: e.toString()));
+        emit(
+          firstState.copyWith(status: FlowStatus.error, error: e.toString()),
+        );
         return;
       }
-      
+
       // Start timer for first step if needed
       _startStepTimerIfNeeded(firstState.currentStep);
     } catch (error) {
-      emit(state.copyWith(
-        status: FlowStatus.error, 
-        error: error.toString(),
-      ));
+      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
     }
   }
 
   /// Completes the flow
-  Future<void> _onFlowCompleted(FlowCompleted event, Emitter<FlowState> emit) async {
+  Future<void> _onFlowCompleted(
+    FlowCompleted event,
+    Emitter<FlowState> emit,
+  ) async {
     await _tryCompleteFlow(emit);
   }
 
@@ -358,7 +350,7 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
   Future<void> _tryCompleteFlow(Emitter<FlowState> emit) async {
     try {
       _cancelStepTimer();
-      
+
       // Execute completion callback if provided
       if (_configuration?.onFlowComplete != null) {
         try {
@@ -368,21 +360,18 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
           return;
         }
       }
-      
+
       // Mark flow as completed
       emit(state.copyWith(status: FlowStatus.completed));
     } catch (error) {
-      emit(state.copyWith(
-        status: FlowStatus.error, 
-        error: error.toString(),
-      ));
+      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
     }
   }
 
   /// Starts a timer for auto-advancing timed steps
   void _startStepTimerIfNeeded(FlowStep? step) {
     if (step == null) return;
-    
+
     final timeLimit = step.timeLimit ?? _configuration?.defaultStepDuration;
     if (timeLimit == null) return;
 

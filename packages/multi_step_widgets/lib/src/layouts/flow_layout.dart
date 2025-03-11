@@ -55,22 +55,23 @@ class FlowLayout extends StatelessWidget {
 
   /// Padding around the step content
   final EdgeInsets contentPadding;
-  
+
   /// Padding around the indicator
   final EdgeInsets indicatorPadding;
 
   /// Custom transition builder
-  final Widget Function(BuildContext, Widget, Animation<double>)? transitionBuilder;
-  
+  final Widget Function(BuildContext, Widget, Animation<double>)?
+  transitionBuilder;
+
   /// Optional custom page controller
   final PageController? pageController;
-  
+
   /// Direction of flow scrolling
   final FlowScrollDirection scrollDirection;
-  
+
   /// Custom transition duration
   final Duration? customTransitionDuration;
-  
+
   /// Custom transition curve
   final Curve? customTransitionCurve;
 
@@ -81,7 +82,7 @@ class FlowLayout extends StatelessWidget {
       initialData: controller.currentState,
       builder: (context, snapshot) {
         final state = snapshot.data!;
-        
+
         return Column(
           children: [
             Expanded(
@@ -89,13 +90,18 @@ class FlowLayout extends StatelessWidget {
                 controller: controller,
                 stepBuilder: stepBuilder,
                 theme: theme,
-                indicator: indicatorBuilder?.call(state) ?? 
-                         DotsIndicator(
-                           state: state,
-                           theme: theme?.stepIndicatorTheme ?? 
-                                 const StepIndicatorThemeData(),
-                         ),
-                indicatorPosition: showIndicator ? IndicatorPosition.top : IndicatorPosition.none,
+                indicator:
+                    indicatorBuilder?.call(state) ??
+                    DotsIndicator(
+                      state: state,
+                      theme:
+                          theme?.stepIndicatorTheme ??
+                          const StepIndicatorThemeData(),
+                    ),
+                indicatorPosition:
+                    showIndicator
+                        ? IndicatorPosition.top
+                        : IndicatorPosition.none,
                 physics: physics,
                 contentPadding: contentPadding,
                 indicatorPadding: indicatorPadding,
@@ -108,9 +114,7 @@ class FlowLayout extends StatelessWidget {
             ),
             if (showNavigationBar)
               navigationBarBuilder?.call(state) ??
-              FlowNavigationBar(
-                controller: controller,
-              ),
+                  FlowNavigationBar(controller: controller),
           ],
         );
       },

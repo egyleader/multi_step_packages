@@ -58,9 +58,9 @@ class FlowState extends Equatable {
   final Set<String> skippedSteps;
 
   /// The current step
-  FlowStep? get currentStep => 
-      currentStepIndex >= 0 && currentStepIndex < steps.length 
-          ? steps[currentStepIndex] 
+  FlowStep? get currentStep =>
+      currentStepIndex >= 0 && currentStepIndex < steps.length
+          ? steps[currentStepIndex]
           : null;
 
   /// Whether there is a next step available
@@ -73,11 +73,11 @@ class FlowState extends Equatable {
   bool get isComplete => status == FlowStatus.completed;
 
   /// Whether the current step is validated
-  bool get isCurrentStepValidated => 
+  bool get isCurrentStepValidated =>
       currentStep != null && validatedSteps.contains(currentStep!.id);
 
   /// Whether the current step is skipped
-  bool get isCurrentStepSkipped => 
+  bool get isCurrentStepSkipped =>
       currentStep != null && skippedSteps.contains(currentStep!.id);
 
   /// Creates a copy of this state with the given fields replaced with new values
@@ -101,11 +101,11 @@ class FlowState extends Equatable {
 
   @override
   List<Object?> get props => [
-        steps,
-        currentStepIndex,
-        status,
-        error,
-        validatedSteps,
-        skippedSteps,
-      ];
+    steps,
+    currentStepIndex,
+    status,
+    error,
+    validatedSteps,
+    skippedSteps,
+  ];
 }

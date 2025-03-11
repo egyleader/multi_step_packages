@@ -67,15 +67,17 @@ class FlowController {
   bool get isCurrentStepSkipped => currentState.isCurrentStepSkipped;
 
   void _initialize(List<FlowStep> steps, FlowConfiguration? configuration) {
-    _bloc.add(FlowInitialized(
-      steps: steps,
-      configuration: configuration ?? const FlowConfiguration(),
-    ));
+    _bloc.add(
+      FlowInitialized(
+        steps: steps,
+        configuration: configuration ?? const FlowConfiguration(),
+      ),
+    );
   }
 
   void _onStateChanged(FlowState state) {
     _stateController.add(state);
-    
+
     // Forward errors to error stream
     if (state.status == FlowStatus.error && state.error != null) {
       _errorController.add(state.error!);
@@ -96,10 +98,10 @@ class FlowController {
 
     // Current step index to detect change
     final currentIndex = currentStepIndex;
-    
+
     subscription = stateStream.listen((state) {
       // If the step has changed or an error occurred, complete the future
-      if (state.currentStepIndex != currentIndex || 
+      if (state.currentStepIndex != currentIndex ||
           state.status == FlowStatus.error) {
         completer.complete();
         subscription.cancel();
@@ -116,7 +118,7 @@ class FlowController {
 
     // Add the event to the bloc
     _bloc.add(const FlowNextPressed());
-    
+
     return completer.future;
   }
 
@@ -126,11 +128,11 @@ class FlowController {
   Future<void> previous() async {
     final completer = Completer<void>();
     late StreamSubscription<FlowState> subscription;
-    
+
     final currentIndex = currentStepIndex;
-    
+
     subscription = stateStream.listen((state) {
-      if (state.currentStepIndex != currentIndex || 
+      if (state.currentStepIndex != currentIndex ||
           state.status == FlowStatus.error) {
         completer.complete();
         subscription.cancel();
@@ -145,7 +147,7 @@ class FlowController {
     });
 
     _bloc.add(const FlowPreviousPressed());
-    
+
     return completer.future;
   }
 
@@ -159,11 +161,11 @@ class FlowController {
 
     final completer = Completer<void>();
     late StreamSubscription<FlowState> subscription;
-    
+
     final currentIndex = currentStepIndex;
-    
+
     subscription = stateStream.listen((state) {
-      if (state.currentStepIndex != currentIndex || 
+      if (state.currentStepIndex != currentIndex ||
           state.status == FlowStatus.error) {
         completer.complete();
         subscription.cancel();
@@ -178,7 +180,7 @@ class FlowController {
     });
 
     _bloc.add(const FlowStepSkipped());
-    
+
     return completer.future;
   }
 
@@ -188,11 +190,11 @@ class FlowController {
   Future<void> validate(bool isValid) async {
     final completer = Completer<void>();
     late StreamSubscription<FlowState> subscription;
-    
+
     final currentValidated = isCurrentStepValidated;
-    
+
     subscription = stateStream.listen((state) {
-      if (state.isCurrentStepValidated != currentValidated || 
+      if (state.isCurrentStepValidated != currentValidated ||
           state.status == FlowStatus.error) {
         completer.complete();
         subscription.cancel();
@@ -207,7 +209,7 @@ class FlowController {
     });
 
     _bloc.add(FlowStepValidated(isValid: isValid));
-    
+
     return completer.future;
   }
 
@@ -222,10 +224,9 @@ class FlowController {
 
     final completer = Completer<void>();
     late StreamSubscription<FlowState> subscription;
-    
+
     subscription = stateStream.listen((state) {
-      if (state.currentStepIndex == index || 
-          state.status == FlowStatus.error) {
+      if (state.currentStepIndex == index || state.status == FlowStatus.error) {
         completer.complete();
         subscription.cancel();
       }
@@ -239,7 +240,7 @@ class FlowController {
     });
 
     _bloc.add(FlowStepSelected(index));
-    
+
     return completer.future;
   }
 
@@ -249,10 +250,10 @@ class FlowController {
   Future<void> reset() async {
     final completer = Completer<void>();
     late StreamSubscription<FlowState> subscription;
-    
+
     subscription = stateStream.listen((state) {
-      if (state.currentStepIndex == 0 && 
-          state.validatedSteps.isEmpty && 
+      if (state.currentStepIndex == 0 &&
+          state.validatedSteps.isEmpty &&
           state.skippedSteps.isEmpty) {
         completer.complete();
         subscription.cancel();
@@ -267,7 +268,7 @@ class FlowController {
     });
 
     _bloc.add(const FlowReset());
-    
+
     return completer.future;
   }
 
@@ -277,9 +278,9 @@ class FlowController {
   Future<void> complete() async {
     final completer = Completer<void>();
     late StreamSubscription<FlowState> subscription;
-    
+
     subscription = stateStream.listen((state) {
-      if (state.status == FlowStatus.completed || 
+      if (state.status == FlowStatus.completed ||
           state.status == FlowStatus.error) {
         completer.complete();
         subscription.cancel();
@@ -294,7 +295,7 @@ class FlowController {
     });
 
     _bloc.add(const FlowCompleted());
-    
+
     return completer.future;
   }
 
@@ -326,8 +327,7 @@ extension CompleterExtension on Completer {
 extension FutureExtension on Future {
   bool get isCompleted {
     bool isCompleted = true;
-    this.then((_) => isCompleted = true)
-        .catchError((_) => isCompleted = true);
+    then((_) => isCompleted = true).catchError((_) => isCompleted = true);
     return isCompleted;
   }
 }

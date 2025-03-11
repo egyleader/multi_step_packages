@@ -1,4 +1,4 @@
-library multi_step_flow;
+library;
 
 export 'src/models/flow_step.dart';
 export 'src/models/flow_configuration.dart';

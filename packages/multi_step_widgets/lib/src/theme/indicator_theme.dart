@@ -82,10 +82,8 @@ class StepIndicatorThemeData {
       inactiveColor: inactiveColor ?? colorScheme.onSurface.withOpacity(0.38),
       completedColor: completedColor ?? colorScheme.primary,
       errorColor: errorColor ?? colorScheme.error,
-      labelStyle: labelStyle ?? TextStyle(
-        color: colorScheme.onSurface,
-        fontSize: 12,
-      ),
+      labelStyle:
+          labelStyle ?? TextStyle(color: colorScheme.onSurface, fontSize: 12),
     );
   }
 }

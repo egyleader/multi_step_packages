@@ -25,7 +25,7 @@ class FlowNavigationBar extends StatelessWidget {
     this.backgroundColor,
     this.border,
     this.nextButtonBuilder,
-    this.previousButtonBuilder, 
+    this.previousButtonBuilder,
     this.skipButtonBuilder,
     this.completeButtonBuilder,
     this.shouldShowSkip,
@@ -51,7 +51,7 @@ class FlowNavigationBar extends StatelessWidget {
 
   /// Whether to show the next/complete button (default: true)
   final bool showNextButton;
-  
+
   /// Whether to show the previous button (default: true)
   final bool showPreviousButton;
 
@@ -69,19 +69,24 @@ class FlowNavigationBar extends StatelessWidget {
 
   /// Optional custom layout builder for complete control over the navigation bar layout
   /// When provided, this will override the default layout
-  /// 
+  ///
   /// ```dart
   /// customLayout: (context, state, buttons) {
   ///   return Row(
   ///     children: [
   ///       buttons.previous!,
-  ///       Spacer(), 
+  ///       Spacer(),
   ///       buttons.next!,
   ///     ],
   ///   );
   /// }
   /// ```
-  final Widget Function(BuildContext context, FlowState state, NavigationButtons buttons)? customLayout;
+  final Widget Function(
+    BuildContext context,
+    FlowState state,
+    NavigationButtons buttons,
+  )?
+  customLayout;
 
   /// Optional custom padding for the navigation bar
   final EdgeInsetsGeometry? padding;
@@ -91,26 +96,38 @@ class FlowNavigationBar extends StatelessWidget {
 
   /// Optional custom background color for the navigation bar
   final Color? backgroundColor;
-  
+
   /// Optional custom border for the navigation bar
   final Border? border;
 
   /// Optional builder for the next button
   /// Allows complete customization of the next button
-  final Widget Function(BuildContext context, VoidCallback? onPressed, bool enabled)? nextButtonBuilder;
-  
+  final Widget Function(
+    BuildContext context,
+    VoidCallback? onPressed,
+    bool enabled,
+  )?
+  nextButtonBuilder;
+
   /// Optional builder for the previous button
   /// Allows complete customization of the previous button
-  final Widget Function(BuildContext context, VoidCallback? onPressed)? previousButtonBuilder;
-  
+  final Widget Function(BuildContext context, VoidCallback? onPressed)?
+  previousButtonBuilder;
+
   /// Optional builder for the skip button
   /// Allows complete customization of the skip button
-  final Widget Function(BuildContext context, VoidCallback? onPressed)? skipButtonBuilder;
-  
+  final Widget Function(BuildContext context, VoidCallback? onPressed)?
+  skipButtonBuilder;
+
   /// Optional builder for the complete button
   /// Allows complete customization of the complete button
-  final Widget Function(BuildContext context, VoidCallback? onPressed, bool enabled)? completeButtonBuilder;
-  
+  final Widget Function(
+    BuildContext context,
+    VoidCallback? onPressed,
+    bool enabled,
+  )?
+  completeButtonBuilder;
+
   /// Optional custom logic to determine whether to show the skip button
   /// When provided, this will override the default logic and the showSkip parameter
   final bool Function(FlowState state)? shouldShowSkip;
@@ -118,7 +135,7 @@ class FlowNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = FlowTheme.of(context);
-    
+
     return StreamBuilder<FlowState>(
       stream: controller.stateStream,
       initialData: controller.currentState,
@@ -126,42 +143,50 @@ class FlowNavigationBar extends StatelessWidget {
         final state = snapshot.data!;
         final isLastStep = !state.hasNext;
         final currentStep = state.currentStep;
-        final canSkip = shouldShowSkip?.call(state) ?? 
-                       (currentStep?.isSkippable ?? false);
-        final canAdvance = state.isCurrentStepValidated || 
-                          state.isCurrentStepSkipped ||
-                          currentStep == null;
-        
+        final canSkip =
+            shouldShowSkip?.call(state) ?? (currentStep?.isSkippable ?? false);
+        final canAdvance =
+            state.isCurrentStepValidated ||
+            state.isCurrentStepSkipped ||
+            currentStep == null;
+
         // Create standard buttons based on configuration
-        final nextBtn = showNextButton ? 
-          nextButtonBuilder?.call(
-            context, 
-            isLastStep ? controller.complete : controller.next, 
-            canAdvance
-          ) ?? 
-          NavigationButton(
-            onPressed: isLastStep ? controller.complete : controller.next,
-            style: isLastStep ? completeStyle : nextStyle,
-            enabled: canAdvance,
-            child: isLastStep ? completeLabel : nextLabel,
-          ) : null;
-          
-        final prevBtn = (showPreviousButton && state.hasPrevious) ?
-          previousButtonBuilder?.call(context, controller.previous) ??
-          NavigationButton(
-            onPressed: controller.previous,
-            style: previousStyle,
-            child: previousLabel,
-          ) : null;
-          
-        final skipBtn = (showSkip && canSkip && !isLastStep) ?
-          skipButtonBuilder?.call(context, controller.skip) ??
-          NavigationButton(
-            onPressed: controller.skip,
-            style: skipStyle,
-            child: skipLabel,
-          ) : null;
-        
+        final nextBtn =
+            showNextButton
+                ? nextButtonBuilder?.call(
+                      context,
+                      isLastStep ? controller.complete : controller.next,
+                      canAdvance,
+                    ) ??
+                    NavigationButton(
+                      onPressed:
+                          isLastStep ? controller.complete : controller.next,
+                      style: isLastStep ? completeStyle : nextStyle,
+                      enabled: canAdvance,
+                      child: isLastStep ? completeLabel : nextLabel,
+                    )
+                : null;
+
+        final prevBtn =
+            (showPreviousButton && state.hasPrevious)
+                ? previousButtonBuilder?.call(context, controller.previous) ??
+                    NavigationButton(
+                      onPressed: controller.previous,
+                      style: previousStyle,
+                      child: previousLabel,
+                    )
+                : null;
+
+        final skipBtn =
+            (showSkip && canSkip && !isLastStep)
+                ? skipButtonBuilder?.call(context, controller.skip) ??
+                    NavigationButton(
+                      onPressed: controller.skip,
+                      style: skipStyle,
+                      child: skipLabel,
+                    )
+                : null;
+
         // Create button collection for custom layout
         final buttons = NavigationButtons(
           next: nextBtn,
@@ -169,19 +194,20 @@ class FlowNavigationBar extends StatelessWidget {
           skip: skipBtn,
           complete: isLastStep ? nextBtn : null,
         );
-        
+
         // Use custom layout if provided
         if (customLayout != null) {
           return Container(
             height: height ?? theme.navigationBarHeight,
             padding: padding ?? theme.navigationBarPadding,
             decoration: BoxDecoration(
-              color: backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
-              border: border ?? Border(
-                top: BorderSide(
-                  color: Theme.of(context).dividerColor,
-                ),
-              ),
+              color:
+                  backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+              border:
+                  border ??
+                  Border(
+                    top: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
             ),
             child: customLayout!(context, state, buttons),
           );
@@ -193,11 +219,9 @@ class FlowNavigationBar extends StatelessWidget {
           padding: padding ?? theme.navigationBarPadding,
           decoration: BoxDecoration(
             color: backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
-            border: border ?? Border(
-              top: BorderSide(
-                color: Theme.of(context).dividerColor,
-              ),
-            ),
+            border:
+                border ??
+                Border(top: BorderSide(color: Theme.of(context).dividerColor)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -205,7 +229,8 @@ class FlowNavigationBar extends StatelessWidget {
               Row(
                 children: [
                   if (prevBtn != null) prevBtn,
-                  if (prevBtn != null && skipBtn != null) const SizedBox(width: 8),
+                  if (prevBtn != null && skipBtn != null)
+                    const SizedBox(width: 8),
                   if (skipBtn != null) skipBtn,
                 ],
               ),
@@ -222,20 +247,15 @@ class FlowNavigationBar extends StatelessWidget {
 class NavigationButtons {
   /// The next button (or null if not shown)
   final Widget? next;
-  
+
   /// The previous button (or null if not shown)
   final Widget? previous;
-  
+
   /// The skip button (or null if not shown)
   final Widget? skip;
-  
+
   /// The complete button (null unless on last step)
   final Widget? complete;
 
-  const NavigationButtons({
-    this.next,
-    this.previous,
-    this.skip,
-    this.complete,
-  });
+  const NavigationButtons({this.next, this.previous, this.skip, this.complete});
 }

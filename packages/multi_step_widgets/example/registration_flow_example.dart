@@ -49,24 +49,22 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     controller = FlowController(
       steps: [
         PersonalInfoStep(),
-        AccountDetailsStep(
-          data: {'requirePassword': true}
-        ),
+        AccountDetailsStep(data: {'requirePassword': true}),
         PreferencesStep(
           isSkippable: true,
-          data: {'options': ['notifications', 'marketing', 'analytics']}
+          data: {
+            'options': ['notifications', 'marketing', 'analytics'],
+          },
         ),
       ],
-      configuration: const FlowConfiguration(
-        validateOnStepChange: true,
-      ),
+      configuration: const FlowConfiguration(validateOnStepChange: true),
     );
 
     // Listen for errors
     controller.errorStream.listen((error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $error')));
     });
   }
 
@@ -94,14 +92,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 }
 
 class PersonalInfoStep extends StatefulWidget implements FlowStep {
-  PersonalInfoStep({
-    Map<String, dynamic>? data,
-  })  : id = 'personal_info',
-         title = 'Personal Information',
-         description = 'Enter your personal details',
-         isSkippable = false,
-         timeLimit = null,
-         data = data ?? {};
+  PersonalInfoStep({super.key, Map<String, dynamic>? data})
+    : id = 'personal_info',
+      title = 'Personal Information',
+      description = 'Enter your personal details',
+      isSkippable = false,
+      timeLimit = null,
+      data = data ?? {};
 
   @override
   final String id;
@@ -117,7 +114,7 @@ class PersonalInfoStep extends StatefulWidget implements FlowStep {
 
   @override
   final Duration? timeLimit;
-  
+
   @override
   final Map<String, dynamic>? data;
 
@@ -148,11 +145,9 @@ class PersonalInfoStep extends StatefulWidget implements FlowStep {
     Duration? timeLimit,
     Map<String, dynamic>? data,
   }) {
-    return PersonalInfoStep(
-      data: data ?? this.data,
-    );
+    return PersonalInfoStep(data: data ?? this.data);
   }
-  
+
   @override
   T? getValue<T>(String key, [T? defaultValue]) {
     return data?[key] as T? ?? defaultValue;
@@ -168,10 +163,7 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          widget.title,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
+        Text(widget.title, style: Theme.of(context).textTheme.headlineMedium),
         if (widget.description != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
@@ -210,14 +202,13 @@ class _PersonalInfoStepState extends State<PersonalInfoStep> {
 }
 
 class AccountDetailsStep extends StatefulWidget implements FlowStep {
-  AccountDetailsStep({
-    Map<String, dynamic>? data,
-  })  : id = 'account_details',
-         title = 'Account Details',
-         description = 'Set up your account',
-         isSkippable = false,
-         timeLimit = null,
-         data = data ?? {};
+  AccountDetailsStep({super.key, Map<String, dynamic>? data})
+    : id = 'account_details',
+      title = 'Account Details',
+      description = 'Set up your account',
+      isSkippable = false,
+      timeLimit = null,
+      data = data ?? {};
 
   @override
   final String id;
@@ -233,7 +224,7 @@ class AccountDetailsStep extends StatefulWidget implements FlowStep {
 
   @override
   final Duration? timeLimit;
-  
+
   @override
   final Map<String, dynamic>? data;
 
@@ -269,11 +260,9 @@ class AccountDetailsStep extends StatefulWidget implements FlowStep {
     Duration? timeLimit,
     Map<String, dynamic>? data,
   }) {
-    return AccountDetailsStep(
-      data: data ?? this.data,
-    );
+    return AccountDetailsStep(data: data ?? this.data);
   }
-  
+
   @override
   T? getValue<T>(String key, [T? defaultValue]) {
     return data?[key] as T? ?? defaultValue;
@@ -286,14 +275,11 @@ class _AccountDetailsStepState extends State<AccountDetailsStep> {
   @override
   Widget build(BuildContext context) {
     final requirePassword = widget.getValue<bool>('requirePassword') ?? false;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          widget.title,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
+        Text(widget.title, style: Theme.of(context).textTheme.headlineMedium),
         if (widget.description != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
@@ -325,14 +311,15 @@ class _AccountDetailsStepState extends State<AccountDetailsStep> {
 
 class PreferencesStep extends StatefulWidget implements FlowStep {
   PreferencesStep({
+    super.key,
     bool isSkippable = true,
     Map<String, dynamic>? data,
-  })  : id = 'preferences',
-         title = 'Preferences',
-         description = 'Set your preferences',
-         isSkippable = isSkippable,
-         timeLimit = null,
-         data = data ?? {};
+  }) : id = 'preferences',
+       title = 'Preferences',
+       description = 'Set your preferences',
+       isSkippable = isSkippable,
+       timeLimit = null,
+       data = data ?? {};
 
   @override
   final String id;
@@ -348,7 +335,7 @@ class PreferencesStep extends StatefulWidget implements FlowStep {
 
   @override
   final Duration? timeLimit;
-  
+
   @override
   final Map<String, dynamic>? data;
 
@@ -381,7 +368,7 @@ class PreferencesStep extends StatefulWidget implements FlowStep {
       data: data ?? this.data,
     );
   }
-  
+
   @override
   T? getValue<T>(String key, [T? defaultValue]) {
     return data?[key] as T? ?? defaultValue;
@@ -405,10 +392,7 @@ class _PreferencesStepState extends State<PreferencesStep> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          widget.title,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
+        Text(widget.title, style: Theme.of(context).textTheme.headlineMedium),
         if (widget.description != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
@@ -418,18 +402,20 @@ class _PreferencesStepState extends State<PreferencesStep> {
             ),
           ),
         const SizedBox(height: 24),
-        ..._preferences.entries.map((entry) => SwitchListTile(
-          title: Text(_formatOptionName(entry.key)),
-          value: entry.value,
-          onChanged: (value) {
-            setState(() {
-              _preferences[entry.key] = value;
-            });
-          },
-        )),
+        ..._preferences.entries.map(
+          (entry) => SwitchListTile(
+            title: Text(_formatOptionName(entry.key)),
+            value: entry.value,
+            onChanged: (value) {
+              setState(() {
+                _preferences[entry.key] = value;
+              });
+            },
+          ),
+        ),
         if (_preferences.isEmpty)
           const Center(child: Text('No preference options available')),
-        if (widget.isSkippable) 
+        if (widget.isSkippable)
           const Padding(
             padding: EdgeInsets.only(top: 16),
             child: Text('This step is optional - you can skip it'),
@@ -437,7 +423,7 @@ class _PreferencesStepState extends State<PreferencesStep> {
       ],
     );
   }
-  
+
   String _formatOptionName(String name) {
     return name.replaceFirst(name[0], name[0].toUpperCase());
   }

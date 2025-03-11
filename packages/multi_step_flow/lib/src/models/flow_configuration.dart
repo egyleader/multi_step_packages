@@ -46,7 +46,8 @@ class FlowConfiguration {
   }) {
     return FlowConfiguration(
       allowBackNavigation: allowBackNavigation ?? this.allowBackNavigation,
-      autoAdvanceOnValidation: autoAdvanceOnValidation ?? this.autoAdvanceOnValidation,
+      autoAdvanceOnValidation:
+          autoAdvanceOnValidation ?? this.autoAdvanceOnValidation,
       validateOnStepChange: validateOnStepChange ?? this.validateOnStepChange,
       showStepIndicator: showStepIndicator ?? this.showStepIndicator,
       preserveState: preserveState ?? this.preserveState,
