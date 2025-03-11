@@ -9,9 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  multi_step_flow: ^0.1.0+1
-  collection: ^1.17.0
-  provider: ^6.1.1
+  multi_step_flow:
+  collection: ^1.18.0
 
 dev_dependencies:
   flutter_test:
