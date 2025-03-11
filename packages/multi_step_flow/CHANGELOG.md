@@ -1,3 +1,7 @@
+## 0.2.0
+
+ - updated to bloc 9
+
 ## 0.1.0+1
 
  - **FIX**: remove pub workspace to solve melos workspace conflict.
