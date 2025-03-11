@@ -55,7 +55,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     'profile': 'Save Profile',
     'notifications': 'Set Preferences',
     'account_connection': 'Connect',
-    'summary': 'Finish'
+    'summary': 'Finish',
   };
 
   @override
@@ -82,13 +82,13 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         showStepIndicator: true,
       ),
     );
-    
+
     // Set controller reference for steps that need it
     for (final step in controller.currentState.steps) {
       if (step is NotificationsStep) {
-        (step as NotificationsStep).setController(controller);
+        (step).setController(controller);
       } else if (step is AccountConnectionStep) {
-        (step as AccountConnectionStep).setController(controller);
+        (step).setController(controller);
       }
     }
 
@@ -110,20 +110,21 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       if (mounted) {
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Setup Complete!'),
-            content: const Text(
-              'You have successfully completed the onboarding.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('OK'),
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Setup Complete!'),
+                content: const Text(
+                  'You have successfully completed the onboarding.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
               ),
-            ],
-          ),
         );
       }
     }
@@ -198,15 +199,15 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
             builder: (context, snapshot) {
               final state = snapshot.data!;
               final currentStepId = state.currentStep?.id ?? '';
-              
+
               // Hide next/complete button on the final Summary step
               final isSummaryStep = currentStepId == 'summary';
-              
+
               // Don't show navigation bar at all on summary step
               if (isSummaryStep) {
                 return const SizedBox.shrink();
               }
-              
+
               return FlowNavigationBar(
                 controller: controller,
                 nextLabel: Text(stepButtonText[currentStepId] ?? 'Continue'),
@@ -215,7 +216,10 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                 showSkip: true,
                 showNextButton: true,
                 backgroundColor: Theme.of(context).colorScheme.surface,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               );
             },
           ),
@@ -227,13 +231,13 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
 /// Welcome step with basic information
 class WelcomeStep extends StatelessWidget implements FlowStep {
-  WelcomeStep({Map<String, dynamic>? data})
-      : id = 'welcome',
-        title = 'Welcome',
-        description = 'Welcome to the multi-step flow demo',
-        isSkippable = false,
-        timeLimit = null,
-        data = data ?? {};
+  WelcomeStep({super.key, Map<String, dynamic>? data})
+    : id = 'welcome',
+      title = 'Welcome',
+      description = 'Welcome to the multi-step flow demo',
+      isSkippable = false,
+      timeLimit = null,
+      data = data ?? {};
 
   @override
   final String id;
@@ -319,13 +323,13 @@ class WelcomeStep extends StatelessWidget implements FlowStep {
 
 /// Profile setup step with form validation
 class ProfileSetupStep extends StatefulWidget implements FlowStep {
-  ProfileSetupStep({Map<String, dynamic>? data})
-      : id = 'profile',
-        title = 'Profile Setup',
-        description = 'Tell us about yourself',
-        isSkippable = false,
-        timeLimit = null,
-        data = data ?? {};
+  ProfileSetupStep({super.key, Map<String, dynamic>? data})
+    : id = 'profile',
+      title = 'Profile Setup',
+      description = 'Tell us about yourself',
+      isSkippable = false,
+      timeLimit = null,
+      data = data ?? {};
 
   @override
   final String id;
@@ -366,7 +370,8 @@ class ProfileSetupStep extends StatefulWidget implements FlowStep {
   @override
   Future<bool> validate() async {
     // The state will handle validation
-    final formIsValid = _ProfileSetupStepState.formKey.currentState?.validate() ?? false;
+    final formIsValid =
+        _ProfileSetupStepState.formKey.currentState?.validate() ?? false;
     return formIsValid;
   }
 
@@ -405,13 +410,13 @@ class _ProfileSetupStepState extends State<ProfileSetupStep> {
 
   void _validateForm() {
     if (!mounted) return;
-    
+
     final valid = formKey.currentState?.validate() ?? false;
     if (valid != isFormValid) {
       setState(() {
         isFormValid = valid;
       });
-      
+
       // Try to find the flow controller in the widget tree
       final flowState = context.findAncestorStateOfType<_OnboardingFlowState>();
       if (flowState != null) {
@@ -498,21 +503,22 @@ class _ProfileSetupStepState extends State<ProfileSetupStep> {
 /// Notifications step with toggle options
 class NotificationsStep extends StatefulWidget implements FlowStep {
   NotificationsStep({
+    super.key,
     this.isSkippable = true,
     Map<String, dynamic>? data,
-  })  : id = 'notifications',
-        title = 'Notification Preferences',
-        description = 'Choose which notifications you want to receive',
-        timeLimit = null,
-        data = data ?? {};
+  }) : id = 'notifications',
+       title = 'Notification Preferences',
+       description = 'Choose which notifications you want to receive',
+       timeLimit = null,
+       data = data ?? {};
 
   // Controller reference for validation
   FlowController? _controller;
-  
+
   void setController(FlowController controller) {
     _controller = controller;
   }
-  
+
   @override
   final String id;
 
@@ -552,9 +558,9 @@ class NotificationsStep extends StatefulWidget implements FlowStep {
   @override
   Future<bool> validate() async {
     // Step is valid only if at least one notification option is enabled
-    return _NotificationsStepState.enablePush || 
-           _NotificationsStepState.enableEmail || 
-           _NotificationsStepState.enableInApp;
+    return _NotificationsStepState.enablePush ||
+        _NotificationsStepState.enableEmail ||
+        _NotificationsStepState.enableInApp;
   }
 
   @override
@@ -587,7 +593,7 @@ class _NotificationsStepState extends State<NotificationsStep> {
   static bool enablePush = false;
   static bool enableEmail = false;
   static bool enableInApp = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -596,10 +602,10 @@ class _NotificationsStepState extends State<NotificationsStep> {
       _updateValidationState();
     });
   }
-  
+
   void _updateValidationState() {
     final isValid = enablePush || enableEmail || enableInApp;
-    
+
     if (widget._controller != null) {
       widget._controller!.validate(isValid);
     } else {
@@ -700,16 +706,19 @@ class _NotificationsStepState extends State<NotificationsStep> {
 
 /// Account connection step with service selection
 class AccountConnectionStep extends StatefulWidget implements FlowStep {
-  AccountConnectionStep({this.isSkippable = true, Map<String, dynamic>? data})
-      : id = 'account_connection',
-        title = 'Connect Accounts',
-        description = 'Connect your other accounts for a better experience',
-        timeLimit = null,
-        data = data ?? {'services': []};
-        
+  AccountConnectionStep({
+    super.key,
+    this.isSkippable = true,
+    Map<String, dynamic>? data,
+  }) : id = 'account_connection',
+       title = 'Connect Accounts',
+       description = 'Connect your other accounts for a better experience',
+       timeLimit = null,
+       data = data ?? {'services': []};
+
   // Controller reference for validation
   FlowController? _controller;
-  
+
   void setController(FlowController controller) {
     _controller = controller;
   }
@@ -788,13 +797,13 @@ class _AccountConnectionStepState extends State<AccountConnectionStep> {
     for (final service in services) {
       selectedServices[service.toString()] = false;
     }
-    
+
     // Set initial validation state
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _updateValidationState();
     });
   }
-  
+
   void _updateValidationState() {
     // Check if any service is connected
     final anyConnected = selectedServices.values.any((connected) => connected);
@@ -802,12 +811,13 @@ class _AccountConnectionStepState extends State<AccountConnectionStep> {
       setState(() {
         hasConnectedService = anyConnected;
       });
-      
+
       // Update validation in controller
       if (widget._controller != null) {
         widget._controller!.validate(anyConnected);
       } else {
-        final flowState = context.findAncestorStateOfType<_OnboardingFlowState>();
+        final flowState =
+            context.findAncestorStateOfType<_OnboardingFlowState>();
         if (flowState != null) {
           flowState.controller.validate(anyConnected);
         }
@@ -912,17 +922,18 @@ class _AccountConnectionStepState extends State<AccountConnectionStep> {
       child: ListTile(
         leading: Icon(icon, color: color, size: 32),
         title: Text('Connect with $service'),
-        trailing: selectedServices[service] == true
-            ? const Icon(Icons.check_circle, color: Colors.green)
-            : OutlinedButton(
-                onPressed: () {
-                  setState(() {
-                    selectedServices[service] = true;
-                    _updateValidationState();
-                  });
-                },
-                child: const Text('Connect'),
-              ),
+        trailing:
+            selectedServices[service] == true
+                ? const Icon(Icons.check_circle, color: Colors.green)
+                : OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      selectedServices[service] = true;
+                      _updateValidationState();
+                    });
+                  },
+                  child: const Text('Connect'),
+                ),
       ),
     );
   }
@@ -930,13 +941,13 @@ class _AccountConnectionStepState extends State<AccountConnectionStep> {
 
 /// Summary step to complete the flow
 class SummaryStep extends StatelessWidget implements FlowStep {
-  SummaryStep({Map<String, dynamic>? data})
-      : id = 'summary',
-        title = 'Summary',
-        description = 'You\'re all set!',
-        isSkippable = false,
-        timeLimit = null,
-        data = data ?? {};
+  SummaryStep({super.key, Map<String, dynamic>? data})
+    : id = 'summary',
+      title = 'Summary',
+      description = 'You\'re all set!',
+      isSkippable = false,
+      timeLimit = null,
+      data = data ?? {};
 
   @override
   final String id;
@@ -1022,18 +1033,19 @@ class SummaryStep extends StatelessWidget implements FlowStep {
               // In a real app, you might navigate to the main app screen
               showDialog(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Example Complete'),
-                  content: const Text(
-                    'In a real app, this would navigate to the main app screen.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('OK'),
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Example Complete'),
+                      content: const Text(
+                        'In a real app, this would navigate to the main app screen.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('OK'),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
               );
             },
             icon: const Icon(Icons.rocket_launch),
