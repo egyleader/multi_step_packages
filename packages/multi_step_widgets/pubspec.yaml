@@ -1,6 +1,6 @@
 name: multi_step_widgets
 description: Flutter UI widgets for building multi-step flows with customizable indicators, navigation controls, and layouts
-version: 0.1.0
+version: 0.1.0+1
 homepage: https://github.com/egyleader/multi_step
 
 environment:
@@ -9,7 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  multi_step_flow: ^0.1.0
+  multi_step_flow: ^0.1.0+1
   collection: ^1.17.0
   provider: ^6.1.1
 
