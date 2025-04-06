@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:multi_step_flow/multi_step_flow.dart';
 import '../theme/indicator_theme.dart';
 
-/// Abstract class for step indicators
-abstract class StepIndicator extends StatelessWidget {
+/// Abstract class for step indicators with generic type support
+abstract class StepIndicator<TStepData> extends StatelessWidget {
   const StepIndicator({
     super.key,
-    required this.state,
+    this.bloc,
     this.onStepTapped,
     this.theme,
   });
 
-  /// Current flow state
-  final FlowState state;
+  /// Optional FlowBloc instance
+  /// If not provided, it will be obtained from the nearest BlocProvider
+  final FlowBloc<TStepData>? bloc;
 
   /// Callback when a step is tapped
   final void Function(int)? onStepTapped;
@@ -20,21 +22,37 @@ abstract class StepIndicator extends StatelessWidget {
   /// Theme data for the indicator
   final StepIndicatorThemeData? theme;
 
+  @override
+  Widget build(BuildContext context) {
+    final flowBloc = bloc ?? BlocProvider.of<FlowBloc<TStepData>>(context);
+    
+    return BlocBuilder<FlowBloc<TStepData>, FlowState<TStepData>>(
+      bloc: flowBloc,
+      builder: (context, state) {
+        return buildIndicator(context, state);
+      },
+    );
+  }
+
+  /// Abstract method to build the indicator UI
+  Widget buildIndicator(BuildContext context, FlowState<TStepData> state);
+
   /// Whether the flow is complete
-  bool get isComplete => state.status == FlowStatus.completed;
+  bool isComplete(FlowState<TStepData> state) => 
+      state.status == FlowStatus.completed;
 
   /// Total number of steps
-  int get stepCount => state.steps.length;
+  int getStepCount(FlowState<TStepData> state) => state.steps.length;
 
   /// Current step index
-  int get currentStepIndex => state.currentStepIndex;
+  int getCurrentStepIndex(FlowState<TStepData> state) => state.currentStepIndex;
 
   /// Get the color for a step at the given index
-  Color getStepColor(BuildContext context, int index) {
+  Color getStepColor(BuildContext context, FlowState<TStepData> state, int index) {
     final colors = theme?.resolve(Theme.of(context).colorScheme);
     if (colors == null) return Theme.of(context).primaryColor;
 
-    if (index == currentStepIndex) {
+    if (index == state.currentStepIndex) {
       return colors.activeColor ?? Theme.of(context).primaryColor;
     }
 
@@ -50,35 +68,35 @@ abstract class StepIndicator extends StatelessWidget {
   }
 
   /// Get the label for a step at the given index
-  String? getStepLabel(int index) {
+  String? getStepLabel(FlowState<TStepData> state, int index) {
     final step = state.steps[index];
     return step.title;
   }
 
-  /// Get custom metadata for a step at the given index
-  T? getStepMetadata<T>(int index, String key, [T? defaultValue]) {
-    if (index < 0 || index >= state.steps.length) return defaultValue;
-    return state.steps[index].getValue<T>(key, defaultValue);
-  }
-
   /// Whether a step at the given index can be selected
-  bool canSelectStep(int index) {
-    if (index == currentStepIndex) return false;
-    if (index < currentStepIndex) return true;
+  bool canSelectStep(FlowState<TStepData> state, int index) {
+    if (index == state.currentStepIndex) return false;
+    if (index < state.currentStepIndex) return true;
 
     // Can only move forward to next step if current step is validated or skipped
-    if (index == currentStepIndex + 1) {
-      return state.validatedSteps.contains(state.currentStep?.id) ||
-          state.skippedSteps.contains(state.currentStep?.id);
+    if (index == state.currentStepIndex + 1) {
+      return state.validatedSteps.contains(state.currentStep.id) ||
+          state.skippedSteps.contains(state.currentStep.id);
     }
 
     return false;
   }
 
   /// Handle step tap
-  void handleStepTap(int index) {
-    if (canSelectStep(index)) {
-      onStepTapped?.call(index);
+  void handleStepTap(BuildContext context, FlowState<TStepData> state, int index) {
+    if (canSelectStep(state, index)) {
+      if (onStepTapped != null) {
+        onStepTapped?.call(index);
+      } else {
+        // Use bloc to navigate directly if no custom handler provided
+        final flowBloc = bloc ?? BlocProvider.of<FlowBloc<TStepData>>(context);
+        flowBloc.goToStep(index);
+      }
     }
   }
 }

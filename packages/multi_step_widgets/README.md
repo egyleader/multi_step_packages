@@ -1,200 +1,271 @@
-# multi_step_widgets
+# Multi-Step Widgets
 
-Flutter UI widgets for building multi-step flows with customizable indicators, navigation controls, and layouts.
-
-> **✨ All-in-One Solution**: This package includes everything you need - both UI components and core flow management functionality. You don't need to install `multi_step_flow` separately.
+UI components for building multi-step flows, forms, and wizards in Flutter.
 
 ## Features
 
-- **FlowBuilder**: Core widget for building multi-step interfaces
-- **Step Indicators**: Visual indicators for flow progress
-  - Dots Indicator
-  - Custom indicator support
-- **Navigation Controls**: Pre-built navigation buttons and bars
-- **Layouts**: Ready-to-use layouts for common flow patterns
-- **Theming**: Comprehensive theming support for consistent UI
-- **All-in-one Package**: Re-exports all necessary types from multi_step_flow
+- 🎯 **Type-safe** - Fully generic implementation with strong typing
+- 🔄 **BLoC integration** - Clean architecture with predictable state
+- 🎨 **Customizable** - Extensive theming and styling options
+- 📱 **Responsive** - Works on all platforms and screen sizes
+- 🧩 **Specialized components** - Form, information, and custom flows
 
-## Getting Started
-
-Add multi_step_widgets to your `pubspec.yaml`:
+## Installation
 
 ```yaml
 dependencies:
-  flutter:
-    sdk: flutter
-  multi_step_widgets: ^0.2.0
-  # No need to depend on multi_step_flow separately
+  multi_step_widgets: ^1.0.0
+  multi_step_flow: ^1.0.0  # Required dependency
 ```
 
-Then run:
+## Core Components
 
-```bash
-flutter pub get
-```
+### FlowBuilder
 
-> **Note:** This package now re-exports all necessary types from `multi_step_flow`, so you don't need to depend on both packages anymore.
-
-## Usage
-
-### Basic Flow Layout
+The core component for rendering multi-step flows:
 
 ```dart
-import 'package:flutter/material.dart';
-import 'package:multi_step_widgets/multi_step_widgets.dart';
-
-class MyFlowScreen extends StatefulWidget {
-  @override
-  State<MyFlowScreen> createState() => _MyFlowScreenState();
-}
-
-class _MyFlowScreenState extends State<MyFlowScreen> {
-  late FlowController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = FlowController(
-      steps: [
-        // Define your steps here
-        YourCustomStep(id: 'step1', title: 'Step 1'),
-        YourCustomStep(id: 'step2', title: 'Step 2'),
-        YourCustomStep(id: 'step3', title: 'Step 3'),
-      ],
-    );
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Multi-step Flow')),
-      body: FlowLayout(
-        controller: controller,
-        stepBuilder: (context, step) {
-          // Build your step UI here
-          return Center(
-            child: Text(step.title ?? 'Step'),
-          );
-        },
-      ),
-    );
-  }
-}
-```
-
-### Custom Flow Builder
-
-For more customization, use the FlowBuilder directly:
-
-```dart
-FlowBuilder(
-  controller: controller,
+FlowBuilder<UserData>(
+  bloc: flowBloc,
   stepBuilder: (context, step) {
-    // Return your custom step UI
+    // Build your step UI based on step.id
     return YourStepWidget(step: step);
   },
-  indicator: DotsIndicator(),
-  theme: FlowTheme(
-    stepIndicatorTheme: StepIndicatorThemeData(
-      activeColor: Colors.blue,
-      inactiveColor: Colors.grey,
-      completedColor: Colors.green,
-    ),
-    transitionDuration: Duration(milliseconds: 300),
-  ),
-  showIndicator: true,
-  physics: NeverScrollableScrollPhysics(), // Control scroll behavior
-  transitionBuilder: (context, child, animation) {
-    // Custom transition effects
-    return FadeTransition(
-      opacity: animation,
-      child: child,
-    );
+  // Optional customizations
+  loadingBuilder: (context, state) => CircularProgressIndicator(),
+  errorBuilder: (context, error) => Text('Error: $error'),
+  completedBuilder: (context, state) => Text('Flow completed!'),
+  transitionBuilder: (child, animation) {
+    return FadeTransition(opacity: animation, child: child);
   },
-);
-```
-
-### Navigation Controls
-
-```dart
-FlowNavigationBar(
-  controller: controller,
-  nextLabel: 'Continue',
-  previousLabel: 'Back',
-  skipLabel: 'Skip',
-  showSkipButton: true,
-  onCompleted: () {
-    // Called when the last step is completed
-    Navigator.of(context).pushReplacementNamed('/success');
-  },
-);
-```
-
-### Step Indicators
-
-```dart
-DotsIndicator(
-  controller: controller,
-  // Custom styling
-  activeColor: Colors.blue,
-  inactiveColor: Colors.grey,
-  completedColor: Colors.green,
-  size: 12,
-  spacing: 8,
+  animateTransitions: true,
+  transitionDuration: Duration(milliseconds: 300),
+  onFlowCompleted: () => print('Flow completed!'),
 )
 ```
 
-### Theming
+### FlowLayout
 
-Apply theming at the app level:
+A complete layout for multi-step flows:
 
 ```dart
-MaterialApp(
-  title: 'Flow Demo',
-  theme: ThemeData(
-    // Your normal theme configuration
-    colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-    useMaterial3: true,
-    // Add flow theme as an extension
-    extensions: const [
-      FlowTheme(
-        stepIndicatorTheme: StepIndicatorThemeData(
-          activeColor: Colors.blue,
-          inactiveColor: Colors.grey,
-          completedColor: Colors.green,
-          size: 12,
-          spacing: 8,
-        ),
-        transitionDuration: Duration(milliseconds: 300),
-      ),
-    ],
+FlowLayout<UserData>(
+  bloc: flowBloc,
+  stepBuilder: (context, step) => YourStepWidget(step: step),
+  // Optional customizations
+  indicatorBuilder: (state) => DotsIndicator<UserData>(bloc: flowBloc),
+  showIndicator: true,
+  showNavigationBar: true,
+  navigationBarBuilder: (state) => FlowNavigationBar<UserData>(
+    bloc: flowBloc, 
+    nextLabel: Text('CONTINUE'),
+    previousLabel: Text('BACK'),
   ),
-  home: YourFlowScreen(),
-);
+  scrollDirection: FlowScrollDirection.horizontal,
+  indicatorPosition: IndicatorPosition.top,
+)
 ```
 
-## Examples
+### Navigation Components
 
-Check the `/example` folder for complete examples including:
+```dart
+FlowNavigationBar<UserData>(
+  bloc: flowBloc,
+  showNextButton: true,
+  showPreviousButton: true,
+  showSkipButton: true,
+  nextLabel: Text('NEXT'),
+  previousLabel: Text('BACK'),
+  skipLabel: Text('SKIP'),
+  completeLabel: Text('FINISH'),
+  // Button styles
+  nextStyle: NavigationButtonStyle.filled,
+  previousStyle: NavigationButtonStyle.outlined,
+  skipStyle: NavigationButtonStyle.text,
+)
+```
 
-- Registration flow with validation
-- Questionnaire flow
-- Onboarding flow
+## Step Indicators
 
-## Additional Information
+### DotsIndicator
 
-This package includes all the necessary types and functionality from `multi_step_flow` package. You do not need to depend on `multi_step_flow` separately as all its components (FlowController, FlowStep, etc.) are re-exported through this package.
+```dart
+DotsIndicator<UserData>(
+  bloc: flowBloc,
+  axis: Axis.horizontal,
+  mainAxisAlignment: MainAxisAlignment.center,
+  theme: StepIndicatorThemeData(
+    activeColor: Colors.blue,
+    inactiveColor: Colors.grey,
+    completedColor: Colors.green,
+    errorColor: Colors.red,
+    size: 8.0,
+    spacing: 4.0,
+    strokeWidth: 1.0,
+  ),
+  onStepTapped: (index) {
+    // Navigate to step
+    flowBloc.add(FlowEvent.stepSelected(index: index));
+  },
+)
+```
 
-This package provides both:
-1. Flow state management (through the included multi_step_flow functionality)
-2. Ready-to-use Flutter UI components for building multi-step interfaces
+## Form Components
 
-For a simpler setup:
-- If you're building a Flutter app, use this package only
-- If you're building a pure Dart application (no Flutter), use the `multi_step_flow` package directly
+### FormStepBuilder
+
+Specialized component for form steps:
+
+```dart
+FormStepBuilder<UserData>(
+  bloc: flowBloc,
+  step: state.currentStep,
+  formDataExtractor: (data) => data?.personalInfo ?? FormStepData(),
+  formDataUpdater: (data, formData) {
+    return data?.copyWith(personalInfo: formData) ?? 
+           UserData(personalInfo: formData);
+  },
+  validators: {
+    'name': (value) => (value == null || value.isEmpty) 
+                    ? 'Name is required' : null,
+    'email': (value) => !value.toString().contains('@') 
+                    ? 'Invalid email' : null,
+  },
+  autovalidateMode: AutovalidateMode.onUserInteraction,
+  builder: (context, formData, onChanged, formKey) {
+    return FormStepLayout(
+      title: 'Personal Information',
+      description: 'Please enter your details',
+      child: Column(
+        children: [
+          FlowFormField(
+            fieldName: 'name',
+            formData: formData,
+            onChanged: onChanged,
+            decoration: InputDecoration(labelText: 'Full Name'),
+          ),
+          SizedBox(height: 16),
+          FlowFormField(
+            fieldName: 'email',
+            formData: formData,
+            onChanged: onChanged,
+            decoration: InputDecoration(labelText: 'Email Address'),
+            keyboardType: TextInputType.emailAddress,
+          ),
+        ],
+      ),
+    );
+  },
+)
+```
+
+## Information Components
+
+### InformationStepBuilder
+
+For content-focused steps with read tracking:
+
+```dart
+InformationStepBuilder<TutorialData>(
+  bloc: flowBloc,
+  step: state.currentStep,
+  infoDataExtractor: (data) => data?.introduction ?? InformationStepData(),
+  infoDataUpdater: (data, infoData) {
+    return data?.copyWith(introduction: infoData) ?? 
+           TutorialData(introduction: infoData);
+  },
+  enableAutoReadTracking: true,
+  showProgressIndicator: true,
+  contentBuilder: (context, infoData, onUpdate) {
+    return InformationStepLayout(
+      title: 'Getting Started',
+      description: 'Learn how to use our app',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.asset('assets/tutorial1.png'),
+          SizedBox(height: 16),
+          Text(
+            'Welcome to our application! This tutorial will help you...',
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          // Content automatically tracks read progress
+        ],
+      ),
+    );
+  },
+)
+```
+
+## Theming and Customization
+
+### FlowTheme
+
+```dart
+FlowTheme(
+  theme: FlowThemeData(
+    indicatorTheme: StepIndicatorThemeData(
+      activeColor: Colors.blue,
+      inactiveColor: Colors.grey.shade300,
+      completedColor: Colors.green,
+      errorColor: Colors.red,
+      size: 10.0,
+      spacing: 4.0,
+    ),
+    navigationTheme: NavigationThemeData(
+      primaryColor: Colors.blue,
+      secondaryColor: Colors.grey,
+      textStyle: TextStyle(fontWeight: FontWeight.bold),
+      buttonPadding: EdgeInsets.symmetric(
+        horizontal: 16.0, 
+        vertical: 8.0
+      ),
+      buttonShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+    ),
+  ),
+  child: YourFlowWidget(),
+)
+```
+
+## Extending with Custom Components
+
+You can create custom indicators, navigation bars, or specialized step components:
+
+```dart
+// Custom step indicator
+class NumberedIndicator<T> extends StepIndicator<T> {
+  const NumberedIndicator({
+    super.key,
+    super.bloc,
+    super.onStepTapped,
+    super.theme,
+  });
+
+  @override
+  Widget buildIndicator(BuildContext context, FlowState<T> state) {
+    // Implementation for numbered steps
+    return Row(children: [
+      for (int i = 0; i < state.steps.length; i++)
+        _buildNumberedStep(context, state, i),
+    ]);
+  }
+  
+  Widget _buildNumberedStep(BuildContext context, FlowState<T> state, int index) {
+    final isActive = index == state.currentStepIndex;
+    final isCompleted = state.validatedSteps.contains(state.steps[index].id);
+    
+    return GestureDetector(
+      onTap: () => handleStepTap(context, state, index),
+      child: Container(
+        // Your custom UI implementation
+      ),
+    );
+  }
+}
+```
+
+## Complete Documentation
+
+For full documentation and examples, visit [github.com/yourorg/multi_step_widgets](https://github.com/yourorg/multi_step_widgets).

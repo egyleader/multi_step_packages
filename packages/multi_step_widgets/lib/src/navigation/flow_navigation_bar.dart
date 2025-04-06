@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:multi_step_flow/multi_step_flow.dart';
 import '../theme/flow_theme.dart';
 import 'navigation_button.dart';
 
-/// A navigation bar for multi-step flows
-class FlowNavigationBar extends StatelessWidget {
+/// A navigation bar for multi-step flows with generic type support
+class FlowNavigationBar<TStepData> extends StatelessWidget {
   const FlowNavigationBar({
     super.key,
-    required this.controller,
+    this.bloc,
     this.nextLabel = const Text('Next'),
     this.previousLabel = const Text('Back'),
     this.skipLabel = const Text('Skip'),
@@ -31,8 +32,9 @@ class FlowNavigationBar extends StatelessWidget {
     this.shouldShowSkip,
   });
 
-  /// Controller for managing the flow state
-  final FlowController controller;
+  /// FlowBloc instance
+  /// If not provided, it will be obtained from the nearest BlocProvider
+  final FlowBloc<TStepData>? bloc;
 
   /// Label for the next button
   final Widget nextLabel;
@@ -83,7 +85,7 @@ class FlowNavigationBar extends StatelessWidget {
   /// ```
   final Widget Function(
     BuildContext context,
-    FlowState state,
+    FlowState<TStepData> state,
     NavigationButtons buttons,
   )?
   customLayout;
@@ -130,37 +132,35 @@ class FlowNavigationBar extends StatelessWidget {
 
   /// Optional custom logic to determine whether to show the skip button
   /// When provided, this will override the default logic and the showSkip parameter
-  final bool Function(FlowState state)? shouldShowSkip;
+  final bool Function(FlowState<TStepData> state)? shouldShowSkip;
 
   @override
   Widget build(BuildContext context) {
     final theme = FlowTheme.of(context);
+    final flowBloc = bloc ?? BlocProvider.of<FlowBloc<TStepData>>(context);
 
-    return StreamBuilder<FlowState>(
-      stream: controller.stateStream,
-      initialData: controller.currentState,
-      builder: (context, snapshot) {
-        final state = snapshot.data!;
+    return BlocBuilder<FlowBloc<TStepData>, FlowState<TStepData>>(
+      bloc: flowBloc,
+      builder: (context, state) {
         final isLastStep = !state.hasNext;
         final currentStep = state.currentStep;
         final canSkip =
-            shouldShowSkip?.call(state) ?? (currentStep?.isSkippable ?? false);
+            shouldShowSkip?.call(state) ?? currentStep.isSkippable;
         final canAdvance =
-            state.isCurrentStepValidated ||
-            state.isCurrentStepSkipped ||
-            currentStep == null;
+            state.validatedSteps.contains(currentStep.id) ||
+            state.skippedSteps.contains(currentStep.id);
 
         // Create standard buttons based on configuration
         final nextBtn =
             showNextButton
                 ? nextButtonBuilder?.call(
                       context,
-                      isLastStep ? controller.complete : controller.next,
+                      isLastStep ? () => flowBloc.completeFlow() : () => flowBloc.nextStep(),
                       canAdvance,
                     ) ??
                     NavigationButton(
                       onPressed:
-                          isLastStep ? controller.complete : controller.next,
+                          isLastStep ? () => flowBloc.completeFlow() : () => flowBloc.nextStep(),
                       style: isLastStep ? completeStyle : nextStyle,
                       enabled: canAdvance,
                       child: isLastStep ? completeLabel : nextLabel,
@@ -169,9 +169,9 @@ class FlowNavigationBar extends StatelessWidget {
 
         final prevBtn =
             (showPreviousButton && state.hasPrevious)
-                ? previousButtonBuilder?.call(context, controller.previous) ??
+                ? previousButtonBuilder?.call(context, () => flowBloc.previousStep()) ??
                     NavigationButton(
-                      onPressed: controller.previous,
+                      onPressed: () => flowBloc.previousStep(),
                       style: previousStyle,
                       child: previousLabel,
                     )
@@ -179,9 +179,9 @@ class FlowNavigationBar extends StatelessWidget {
 
         final skipBtn =
             (showSkip && canSkip && !isLastStep)
-                ? skipButtonBuilder?.call(context, controller.skip) ??
+                ? skipButtonBuilder?.call(context, () => flowBloc.skipStep()) ??
                     NavigationButton(
-                      onPressed: controller.skip,
+                      onPressed: () => flowBloc.skipStep(),
                       style: skipStyle,
                       child: skipLabel,
                     )

@@ -1,4 +1,8 @@
-library;
+/// Multi-step flow UI components
+///
+/// This library provides widgets for building multi-step flows, forms, and wizards.
+/// It integrates with the multi_step_flow package for state management.
+library multi_step_widgets;
 
 // Flow building
 export 'src/flow_builder.dart';
@@ -14,6 +18,13 @@ export 'src/navigation/navigation_button.dart';
 // Layouts
 export 'src/layouts/flow_layout.dart';
 
+// Form
+export 'src/form/form_field.dart';
+export 'src/form/form_step.dart';
+
+// Information
+export 'src/information/information_step.dart';
+
 // Themes
 export 'src/theme/flow_theme.dart';
 export 'src/theme/indicator_theme.dart';
@@ -23,11 +34,13 @@ export 'package:multi_step_flow/multi_step_flow.dart'
     show
         // Models
         FlowStep,
+        FlowState,
         FlowConfiguration,
         FlowStatus,
+        FormStepData,
+        InformationStepData,
         // Controllers
         FlowController,
         // BLoC
         FlowBloc,
-        // Validators
-        FlowValidators;
+        FlowEvent;

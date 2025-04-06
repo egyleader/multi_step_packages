@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:multi_step_flow/multi_step_flow.dart';
 
 import '../flow_builder.dart';
@@ -8,11 +9,35 @@ import '../navigation/flow_navigation_bar.dart';
 import '../theme/flow_theme.dart';
 import '../theme/indicator_theme.dart';
 
+/// Scroll direction for flow content
+enum FlowScrollDirection {
+  /// Horizontal scrolling
+  horizontal,
+  
+  /// Vertical scrolling
+  vertical,
+  
+  /// No scrolling
+  none
+}
+
+/// Position of the step indicator
+enum IndicatorPosition {
+  /// Indicator at the top of the layout
+  top,
+  
+  /// Indicator at the bottom of the layout
+  bottom,
+  
+  /// No indicator shown
+  none
+}
+
 /// A standard layout for multi-step flows
-class FlowLayout extends StatelessWidget {
+class FlowLayout<TStepData> extends StatelessWidget {
   const FlowLayout({
     super.key,
-    required this.controller,
+    required this.bloc,
     required this.stepBuilder,
     this.theme,
     this.indicatorBuilder,
@@ -23,26 +48,26 @@ class FlowLayout extends StatelessWidget {
     this.contentPadding = const EdgeInsets.all(16.0),
     this.indicatorPadding = const EdgeInsets.all(16.0),
     this.transitionBuilder,
-    this.pageController,
     this.scrollDirection = FlowScrollDirection.horizontal,
     this.customTransitionDuration,
     this.customTransitionCurve,
+    this.indicatorPosition = IndicatorPosition.top,
   });
 
-  /// Controller for managing the flow state
-  final FlowController controller;
+  /// FlowBloc for managing the flow state
+  final FlowBloc<TStepData> bloc;
 
   /// Builder for step content
-  final StepBuilder stepBuilder;
+  final Widget Function(BuildContext, FlowStep<TStepData>) stepBuilder;
 
   /// Theme for the flow
   final FlowTheme? theme;
 
   /// Builder for custom step indicator
-  final StepIndicator Function(FlowState state)? indicatorBuilder;
+  final StepIndicator<TStepData> Function(FlowState<TStepData> state)? indicatorBuilder;
 
   /// Builder for custom navigation bar
-  final Widget Function(FlowState state)? navigationBarBuilder;
+  final Widget Function(FlowState<TStepData> state)? navigationBarBuilder;
 
   /// Whether to show the step indicator
   final bool showIndicator;
@@ -60,14 +85,13 @@ class FlowLayout extends StatelessWidget {
   final EdgeInsets indicatorPadding;
 
   /// Custom transition builder
-  final Widget Function(BuildContext, Widget, Animation<double>)?
-  transitionBuilder;
-
-  /// Optional custom page controller
-  final PageController? pageController;
+  final AnimatedSwitcherTransitionBuilder? transitionBuilder;
 
   /// Direction of flow scrolling
   final FlowScrollDirection scrollDirection;
+
+  /// Position of the indicator (top or bottom)
+  final IndicatorPosition indicatorPosition;
 
   /// Custom transition duration
   final Duration? customTransitionDuration;
@@ -77,47 +101,61 @@ class FlowLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<FlowState>(
-      stream: controller.stateStream,
-      initialData: controller.currentState,
-      builder: (context, snapshot) {
-        final state = snapshot.data!;
+    return FlowBlocProvider<TStepData>(
+      bloc: bloc,
+      child: BlocBuilder<FlowBloc<TStepData>, FlowState<TStepData>>(
+        bloc: bloc,
+        builder: (context, state) {
+          final children = <Widget>[];
 
-        return Column(
-          children: [
+          // Add top indicator if needed
+          if (showIndicator && indicatorPosition == IndicatorPosition.top) {
+            children.add(
+              Padding(
+                padding: indicatorPadding,
+                child: indicatorBuilder?.call(state) ??
+                      DotsIndicator<TStepData>(bloc: bloc),
+              ),
+            );
+          }
+
+          // Main content
+          children.add(
             Expanded(
-              child: FlowBuilder(
-                controller: controller,
+              child: FlowBuilder<TStepData>(
+                bloc: bloc,
                 stepBuilder: stepBuilder,
-                theme: theme,
-                indicator:
-                    indicatorBuilder?.call(state) ??
-                    DotsIndicator(
-                      state: state,
-                      theme:
-                          theme?.stepIndicatorTheme ??
-                          const StepIndicatorThemeData(),
-                    ),
-                indicatorPosition:
-                    showIndicator
-                        ? IndicatorPosition.top
-                        : IndicatorPosition.none,
-                physics: physics,
-                contentPadding: contentPadding,
-                indicatorPadding: indicatorPadding,
+                transitionDuration: customTransitionDuration ?? 
+                    const Duration(milliseconds: 300),
+                transitionCurve: customTransitionCurve ?? Curves.easeInOut,
+                animateTransitions: scrollDirection == FlowScrollDirection.none,
                 transitionBuilder: transitionBuilder,
-                pageController: pageController,
-                scrollDirection: scrollDirection,
-                customTransitionDuration: customTransitionDuration,
-                customTransitionCurve: customTransitionCurve,
               ),
             ),
-            if (showNavigationBar)
+          );
+
+          // Add bottom indicator if needed
+          if (showIndicator && indicatorPosition == IndicatorPosition.bottom) {
+            children.add(
+              Padding(
+                padding: indicatorPadding,
+                child: indicatorBuilder?.call(state) ??
+                      DotsIndicator<TStepData>(bloc: bloc),
+              ),
+            );
+          }
+
+          // Navigation bar
+          if (showNavigationBar) {
+            children.add(
               navigationBarBuilder?.call(state) ??
-                  FlowNavigationBar(controller: controller),
-          ],
-        );
-      },
+                  FlowNavigationBar<TStepData>(bloc: bloc)
+            );
+          }
+
+          return Column(children: children);
+        },
+      ),
     );
   }
 }

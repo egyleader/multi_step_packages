@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:multi_step_flow/multi_step_flow.dart';
 
 import '../theme/indicator_theme.dart';
 import 'base_indicator.dart';
 
-/// A dot-based step indicator
-class DotsIndicator extends StepIndicator {
+/// A dot-based step indicator with generic type support
+class DotsIndicator<TStepData> extends StepIndicator<TStepData> {
   const DotsIndicator({
     super.key,
-    required super.state,
+    super.bloc,
     super.onStepTapped,
     super.theme,
     this.axis = Axis.horizontal,
@@ -25,14 +26,15 @@ class DotsIndicator extends StepIndicator {
   final MainAxisSize mainAxisSize;
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildIndicator(BuildContext context, FlowState<TStepData> state) {
     final resolvedTheme =
         theme?.resolve(Theme.of(context).colorScheme) ??
         const StepIndicatorThemeData().resolve(Theme.of(context).colorScheme);
 
+    final stepCount = getStepCount(state);
     final dots = List.generate(
       stepCount,
-      (index) => _buildDot(context, index, resolvedTheme),
+      (index) => _buildDot(context, state, index, resolvedTheme),
     );
 
     return axis == Axis.horizontal
@@ -50,14 +52,15 @@ class DotsIndicator extends StepIndicator {
 
   Widget _buildDot(
     BuildContext context,
+    FlowState<TStepData> state,
     int index,
     StepIndicatorThemeData theme,
   ) {
-    final isActive = index == currentStepIndex;
-    final color = getStepColor(context, index);
+    final isActive = index == getCurrentStepIndex(state);
+    final color = getStepColor(context, state, index);
 
     return GestureDetector(
-      onTap: () => handleStepTap(index),
+      onTap: () => handleStepTap(context, state, index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: isActive ? theme.size * 2 : theme.size,
