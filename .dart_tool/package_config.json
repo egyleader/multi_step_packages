@@ -50,6 +50,54 @@
       "languageVersion": "3.1"
     },
     {
+      "name": "build",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/build-2.4.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "build_config",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/build_config-1.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "build_daemon",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/build_daemon-4.0.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "build_resolvers",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/build_resolvers-2.4.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "build_runner",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/build_runner-2.4.15",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "build_runner_core",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/build_runner_core-8.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "built_collection",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/built_collection-5.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "built_value",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/built_value-8.9.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "characters",
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/characters-1.4.0",
       "packageUri": "lib/",
@@ -86,6 +134,12 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "code_builder",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/code_builder-4.10.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
       "name": "collection",
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/collection-1.19.1",
       "packageUri": "lib/",
@@ -116,14 +170,14 @@
       "languageVersion": "3.4"
     },
     {
-      "name": "diff_match_patch",
-      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/diff_match_patch-0.4.1",
+      "name": "dart_style",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/dart_style-3.0.1",
       "packageUri": "lib/",
-      "languageVersion": "2.12"
+      "languageVersion": "3.4"
     },
     {
-      "name": "equatable",
-      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/equatable-2.0.7",
+      "name": "diff_match_patch",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/diff_match_patch-0.4.1",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -140,10 +194,22 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "fixnum",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/fixnum-1.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
       "name": "flutter",
-      "rootUri": "file:///Users/egyleader/fvm/versions/stable/packages/flutter",
+      "rootUri": "file:///Users/egyleader/fvm/default/packages/flutter",
       "packageUri": "lib/",
       "languageVersion": "3.7"
+    },
+    {
+      "name": "flutter_bloc",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/flutter_bloc-9.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.14"
     },
     {
       "name": "flutter_lints",
@@ -153,13 +219,25 @@
     },
     {
       "name": "flutter_test",
-      "rootUri": "file:///Users/egyleader/fvm/versions/stable/packages/flutter_test",
+      "rootUri": "file:///Users/egyleader/fvm/default/packages/flutter_test",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
     {
       "name": "formz",
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/formz-0.7.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "freezed",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/freezed-3.0.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "freezed_annotation",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/freezed_annotation-3.0.0",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
@@ -182,6 +260,12 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "hive_ce",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/hive_ce-2.10.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
       "name": "http",
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/http-1.3.0",
       "packageUri": "lib/",
@@ -198,6 +282,12 @@
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/http_parser-4.1.2",
       "packageUri": "lib/",
       "languageVersion": "3.4"
+    },
+    {
+      "name": "hydrated_bloc",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/hydrated_bloc-10.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.14"
     },
     {
       "name": "intl",
@@ -222,6 +312,12 @@
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/json_annotation-4.9.0",
       "packageUri": "lib/",
       "languageVersion": "3.0"
+    },
+    {
+      "name": "json_serializable",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/json_serializable-6.9.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
     },
     {
       "name": "leak_tracker",
@@ -296,6 +392,12 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "nested",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/nested-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "node_preamble",
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/node_preamble-2.0.2",
       "packageUri": "lib/",
@@ -334,6 +436,12 @@
     {
       "name": "prompts",
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/prompts-2.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "provider",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/provider-6.1.2",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -381,9 +489,21 @@
     },
     {
       "name": "sky_engine",
-      "rootUri": "file:///Users/egyleader/fvm/versions/stable/bin/cache/pkg/sky_engine",
+      "rootUri": "file:///Users/egyleader/fvm/default/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",
       "languageVersion": "3.7"
+    },
+    {
+      "name": "source_gen",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/source_gen-2.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "source_helper",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/source_helper-1.3.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
     },
     {
       "name": "source_map_stack_trace",
@@ -416,10 +536,22 @@
       "languageVersion": "3.3"
     },
     {
+      "name": "stream_transform",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/stream_transform-2.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
       "name": "string_scanner",
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/string_scanner-1.4.1",
       "packageUri": "lib/",
       "languageVersion": "3.1"
+    },
+    {
+      "name": "synchronized",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/synchronized-3.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
     },
     {
       "name": "term_glyph",
@@ -444,6 +576,12 @@
       "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/test_core-0.6.8",
       "packageUri": "lib/",
       "languageVersion": "3.5"
+    },
+    {
+      "name": "timing",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/timing-1.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
     },
     {
       "name": "typed_data",
@@ -524,10 +662,10 @@
       "languageVersion": "3.7"
     }
   ],
-  "generated": "2025-03-11T19:42:23.303221Z",
+  "generated": "2025-04-06T13:33:19.460994Z",
   "generator": "pub",
-  "generatorVersion": "3.7.0",
-  "flutterRoot": "file:///Users/egyleader/fvm/versions/stable",
-  "flutterVersion": "3.29.0",
+  "generatorVersion": "3.7.2",
+  "flutterRoot": "file:///Users/egyleader/fvm/default",
+  "flutterVersion": "3.29.2",
   "pubCache": "file:///Users/egyleader/.pub-cache"
 }
