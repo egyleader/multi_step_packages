@@ -2,14 +2,26 @@
 
 A Flutter package for creating type-safe multi-step flows and wizards with modern architecture.
 
+## Benefits & Use Cases
+
+This package provides a powerful solution for implementing various types of multi-step flows in your Flutter applications:
+
+- **Multi-Step Registration Forms**: Create complex registration processes that break lengthy forms into manageable steps with built-in validation
+- **User Onboarding Experiences**: Design engaging onboarding tutorials with auto-advancing slides and progress tracking
+- **Interactive Stories and Narratives**: Build interactive storytelling apps with branching paths and user choices
+- **E-commerce Checkout Flows**: Implement streamlined checkout processes with predictable state management
+- **Questionnaires and Surveys**: Create dynamic questionnaires with skip logic and conditional steps
+- **Tutorial Wizards**: Guide users through complex features with step-by-step instructions
+- **Multi-Page Document Flows**: Handle document submission workflows with file uploads and validation
+
 ## Features
 
-- 🎯 **Type-safe** - Generic implementation with strong typing
-- 🔄 **BLoC-based state management** - Clean architecture with predictable state
-- 💾 **Persistent state** - Optional state persistence with hydrated_bloc
-- 🔌 **Extensible** - Create custom step types and extensions
-- 🧩 **Modular** - Specialized components for different use cases
-- 🎨 **Customizable** - Full control over UI and behavior
+- 🎯 **Type-safe** - Generic implementation with strong typing for compile-time safety
+- 🔄 **BLoC-based state management** - Clean architecture with predictable state transitions
+- 💾 **Persistent state** - Optional state persistence with hydrated_bloc to survive app restarts
+- 🔌 **Extensible** - Create custom step types and extensions for your specific needs
+- 🧩 **Modular** - Specialized components for different use cases that work together seamlessly
+- 🎨 **Customizable** - Full control over UI and behavior with flexible theming options
 
 ## Installation
 
@@ -224,24 +236,6 @@ final videoStep = FlowStep<LessonData>(
   title: 'Introduction to Flutter',
   data: LessonData(videoUrl: 'https://example.com/video.mp4'),
 ).withExtension('video_extension');
-```
-
-## Migration from 0.x Versions
-
-If you're upgrading from older versions:
-
-```dart
-// Old code (v0.x)
-final controller = FlowController(steps: steps);
-controller.nextStep();
-
-// New code (v1.x)
-final bloc = FlowBloc<MyData>(steps);
-bloc.add(FlowEvent.nextPressed());
-
-// Or use the compatibility layer
-final controller = FlowController<MyData>(steps: steps);
-controller.nextStep(); // This will use the bloc under the hood
 ```
 
 ## Complete Documentation

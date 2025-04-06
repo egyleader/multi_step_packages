@@ -39,8 +39,6 @@ export 'package:multi_step_flow/multi_step_flow.dart'
         FlowStatus,
         FormStepData,
         InformationStepData,
-        // Controllers
-        FlowController,
         // BLoC
         FlowBloc,
         FlowEvent;
