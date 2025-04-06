@@ -6,27 +6,39 @@ import 'package:multi_step_widgets/multi_step_widgets.dart';
 void main() {
   group('DotsIndicator', () {
     testWidgets('renders correct number of dots', (tester) async {
-      final steps = [TestStep(id: '1'), TestStep(id: '2'), TestStep(id: '3')];
+      final steps = [
+        FlowStep<TestData>(id: '1', data: TestData()),
+        FlowStep<TestData>(id: '2', data: TestData()),
+        FlowStep<TestData>(id: '3', data: TestData()),
+      ];
 
-      final state = FlowState(steps: steps);
+      final bloc = FlowBloc<TestData>(steps: steps);
 
       await tester.pumpWidget(
-        MaterialApp(home: Scaffold(body: DotsIndicator(state: state))),
+        MaterialApp(home: Scaffold(body: DotsIndicator<TestData>(bloc: bloc))),
       );
 
       expect(find.byType(AnimatedContainer), findsNWidgets(3));
+      
+      // Clean up
+      bloc.close();
     });
 
     testWidgets('active dot has different color', (tester) async {
-      final steps = [TestStep(id: '1'), TestStep(id: '2')];
+      final steps = [
+        FlowStep<TestData>(id: '1', data: TestData()),
+        FlowStep<TestData>(id: '2', data: TestData()),
+      ];
 
-      final state = FlowState(steps: steps, currentStepIndex: 1);
+      final bloc = FlowBloc<TestData>(steps: steps);
+      // Move to the second step
+      bloc.nextStep();
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: DotsIndicator(
-              state: state,
+            body: DotsIndicator<TestData>(
+              bloc: bloc,
               theme: const StepIndicatorThemeData(
                 activeColor: Colors.blue,
                 inactiveColor: Colors.grey,
@@ -47,19 +59,24 @@ void main() {
 
       expect(firstDecoration.color, Colors.grey);
       expect(activeDecoration.color, Colors.blue);
+      
+      // Clean up
+      bloc.close();
     });
   });
 
   group('FlowLayout', () {
     testWidgets('renders step content and navigation bar', (tester) async {
-      final steps = [TestStep(id: '1')];
-      final controller = FlowController(steps: steps);
+      final steps = [
+        FlowStep<TestData>(id: '1', data: TestData()),
+      ];
+      final bloc = FlowBloc<TestData>(steps: steps);
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: FlowLayout(
-              controller: controller,
+            body: FlowLayout<TestData>(
+              bloc: bloc,
               stepBuilder: (context, step) => const Text('Step Content'),
             ),
           ),
@@ -67,43 +84,47 @@ void main() {
       );
 
       expect(find.text('Step Content'), findsOneWidget);
-      expect(find.byType(FlowNavigationBar), findsOneWidget);
+      expect(find.byType(FlowNavigationBar<TestData>), findsOneWidget);
+      
+      // Clean up
+      bloc.close();
     });
 
-    testWidgets('supports custom step indicator', (tester) async {
-      final steps = [TestStep(id: '1')];
-      final controller = FlowController(steps: steps);
+    testWidgets('supports custom indicator', (tester) async {
+      final steps = [
+        FlowStep<TestData>(id: '1', data: TestData()),
+      ];
+      final bloc = FlowBloc<TestData>(steps: steps);
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: StreamBuilder<FlowState>(
-              stream: controller.stateStream,
-              initialData: controller.currentState,
-              builder: (context, snapshot) {
-                return FlowLayout(
-                  controller: controller,
-                  stepBuilder: (context, step) => const Text('Step Content'),
-                  indicatorBuilder: (state) => TextIndicator(state: state),
-                );
-              },
+            body: FlowLayout<TestData>(
+              bloc: bloc,
+              stepBuilder: (context, step) => const Text('Step Content'),
+              indicatorBuilder: (_) => TextStepIndicator<TestData>(bloc: bloc),
             ),
           ),
         ),
       );
 
       expect(find.text('Step 1 of 1'), findsOneWidget);
+      
+      // Clean up
+      bloc.close();
     });
 
     testWidgets('respects showNavigationBar option', (tester) async {
-      final steps = [TestStep(id: '1')];
-      final controller = FlowController(steps: steps);
+      final steps = [
+        FlowStep<TestData>(id: '1', data: TestData()),
+      ];
+      final bloc = FlowBloc<TestData>(steps: steps);
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: FlowLayout(
-              controller: controller,
+            body: FlowLayout<TestData>(
+              bloc: bloc,
               stepBuilder: (context, step) => const Text('Step Content'),
               showNavigationBar: false,
             ),
@@ -111,53 +132,32 @@ void main() {
         ),
       );
 
-      expect(find.byType(FlowNavigationBar), findsNothing);
+      expect(find.byType(FlowNavigationBar<TestData>), findsNothing);
+      
+      // Clean up
+      bloc.close();
     });
   });
 }
 
 /// Custom text-based step indicator for testing
-class TextIndicator extends StepIndicator {
-  const TextIndicator({
-    super.key,
-    required super.state,
-    super.onStepTapped,
-    super.theme,
-  });
+class TextStepIndicator<T> extends StepIndicator<T> {
+  const TextStepIndicator({
+    Key? key,
+    required this.bloc,
+  }) : super(key: key, bloc: bloc);
+  
+  final FlowBloc<T> bloc;
 
   @override
-  Widget build(BuildContext context) {
-    return Text('Step ${currentStepIndex + 1} of $stepCount');
+  Widget buildIndicator(BuildContext context, FlowState<T> state) {
+    return Text('Step ${state.currentStepIndex + 1} of ${bloc.steps.length}');
   }
 }
 
-/// Test implementation of [FlowStep]
-class TestStep extends FlowStep {
-  const TestStep({
-    required super.id,
-    String? title,
-    super.description,
-    super.isSkippable,
-    super.timeLimit,
-    super.data,
-  }) : super(title: title ?? 'Test Step');
-
-  @override
-  FlowStep copyWith({
-    String? id,
-    String? title,
-    String? description,
-    bool? isSkippable,
-    Duration? timeLimit,
-    Map<String, dynamic>? data,
-  }) {
-    return TestStep(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      isSkippable: isSkippable ?? this.isSkippable,
-      timeLimit: timeLimit ?? this.timeLimit,
-      data: data ?? this.data,
-    );
-  }
+/// Test data class for testing
+class TestData {
+  final String value;
+  
+  TestData({this.value = 'test'});
 }

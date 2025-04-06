@@ -42,26 +42,37 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       FlowStep<RegistrationData>(
         id: 'personal',
         title: 'Personal Information',
-        data: RegistrationData(),
+        // Make the first step skippable so Next is enabled
+        isSkippable: true,
+        data: RegistrationData(
+          firstName: '',
+          lastName: '',
+        ),
       ),
       FlowStep<RegistrationData>(
         id: 'account',
         title: 'Account Details',
-        data: RegistrationData(),
+        data: RegistrationData(
+          email: '',
+          password: '',
+        ),
       ),
       FlowStep<RegistrationData>(
         id: 'preferences',
         title: 'Preferences',
         isSkippable: true,
-        data: RegistrationData(),
+        data: RegistrationData(
+          receiveNewsletter: false,
+          preferredTheme: 'system',
+        ),
       ),
     ];
 
     // Initialize the bloc
     _bloc = FlowBloc<RegistrationData>(steps: steps);
     
-    // Mark the registration flow as initially invalid
-    _bloc.add(const FlowEvent.stepValidated(isValid: false));
+    // Make sure the first step is valid so the Next button is enabled
+    _bloc.validateStep(true);
   }
 
   @override
@@ -180,78 +191,112 @@ class PersonalInfoForm extends StatefulWidget {
 }
 
 class _PersonalInfoFormState extends State<PersonalInfoForm> {
-  late FormStepData _formData;
-  
+  final _formKey = GlobalKey<FormState>();
+  String _firstName = '';
+  String _lastName = '';
+  bool _isValid = false;
+
   @override
   void initState() {
     super.initState();
-    _formData = FormStepData();
+    // Initialize from current step data if available
+    final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context, listen: false);
+    final currentData = bloc.state.currentStep.data;
+    _firstName = currentData.firstName ?? '';
+    _lastName = currentData.lastName ?? '';
   }
   
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context);
-    
     return Padding(
       padding: const EdgeInsets.all(24.0),
-      child: FormStepLayout(
-        title: 'Personal Information',
-        description: 'Please enter your name',
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            FlowFormField(
-              fieldName: 'firstName',
-              formData: _formData,
-              onChanged: _updateFormData,
-              decoration: const InputDecoration(
-                labelText: 'First Name',
-                hintText: 'Enter your first name',
-              ),
-              validator: (value) {
-                if (value == null || value.toString().isEmpty) {
-                  return 'First name is required';
-                }
-                return null;
-              },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Personal Information',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Please enter your name',
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 24),
+          Form(
+            key: _formKey,
+            onChanged: _validateForm,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextFormField(
+                  initialValue: _firstName,
+                  decoration: const InputDecoration(
+                    labelText: 'First Name',
+                    hintText: 'Enter your first name',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'First name is required';
+                    }
+                    return null;
+                  },
+                  onChanged: (value) {
+                    setState(() {
+                      _firstName = value;
+                    });
+                    _updateData();
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  initialValue: _lastName,
+                  decoration: const InputDecoration(
+                    labelText: 'Last Name',
+                    hintText: 'Enter your last name',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Last name is required';
+                    }
+                    return null;
+                  },
+                  onChanged: (value) {
+                    setState(() {
+                      _lastName = value;
+                    });
+                    _updateData();
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            FlowFormField(
-              fieldName: 'lastName',
-              formData: _formData,
-              onChanged: _updateFormData,
-              decoration: const InputDecoration(
-                labelText: 'Last Name',
-                hintText: 'Enter your last name',
-              ),
-              validator: (value) {
-                if (value == null || value.toString().isEmpty) {
-                  return 'Last name is required';
-                }
-                return null;
-              },
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
   
-  void _updateFormData(FormStepData updatedFormData) {
+  void _validateForm() {
+    final isValid = _formKey.currentState?.validate() ?? false;
     setState(() {
-      _formData = updatedFormData;
+      _isValid = isValid;
     });
     
+    // Update validation status in the bloc
+    final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context);
+    bloc.validateStep(_isValid);
+  }
+  
+  void _updateData() {
     final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context);
     final currentData = bloc.state.currentStep.data;
     
     final updatedData = currentData.copyWith(
-      firstName: _formData.getField<String>('firstName'),
-      lastName: _formData.getField<String>('lastName'),
+      firstName: _firstName,
+      lastName: _lastName,
     );
     
     bloc.updateStepData(updatedData);
-    bloc.add(FlowEvent.stepValidated(isValid: _formData.isFormValid));
   }
 }
 
@@ -264,97 +309,133 @@ class AccountDetailsForm extends StatefulWidget {
 }
 
 class _AccountDetailsFormState extends State<AccountDetailsForm> {
-  late FormStepData _formData;
+  final _formKey = GlobalKey<FormState>();
+  String _email = '';
+  String _password = '';
   bool _obscurePassword = true;
+  bool _isValid = false;
   
   @override
   void initState() {
     super.initState();
-    _formData = FormStepData();
+    // Initialize from current step data if available
+    final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context, listen: false);
+    final currentData = bloc.state.currentStep.data;
+    _email = currentData.email ?? '';
+    _password = currentData.password ?? '';
   }
   
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(24.0),
-      child: FormStepLayout(
-        title: 'Account Details',
-        description: 'Create your account credentials',
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            FlowFormField(
-              fieldName: 'email',
-              formData: _formData,
-              onChanged: _updateFormData,
-              decoration: const InputDecoration(
-                labelText: 'Email Address',
-                hintText: 'Enter your email',
-                prefixIcon: Icon(Icons.email),
-              ),
-              validator: (value) {
-                if (value == null || value.toString().isEmpty) {
-                  return 'Email is required';
-                }
-                if (!value.toString().contains('@')) {
-                  return 'Enter a valid email address';
-                }
-                return null;
-              },
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 16),
-            FlowFormField(
-              fieldName: 'password',
-              formData: _formData,
-              onChanged: _updateFormData,
-              obscureText: _obscurePassword,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                hintText: 'Create a password',
-                prefixIcon: const Icon(Icons.lock),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Account Details',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Create your account credentials',
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 24),
+          Form(
+            key: _formKey,
+            onChanged: _validateForm,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextFormField(
+                  initialValue: _email,
+                  decoration: const InputDecoration(
+                    labelText: 'Email Address',
+                    hintText: 'Enter your email',
+                    prefixIcon: Icon(Icons.email),
                   ),
-                  onPressed: () {
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Email is required';
+                    }
+                    if (!value.contains('@')) {
+                      return 'Enter a valid email address';
+                    }
+                    return null;
+                  },
+                  keyboardType: TextInputType.emailAddress,
+                  onChanged: (value) {
                     setState(() {
-                      _obscurePassword = !_obscurePassword;
+                      _email = value;
                     });
+                    _updateData();
                   },
                 ),
-              ),
-              validator: (value) {
-                if (value == null || value.toString().isEmpty) {
-                  return 'Password is required';
-                }
-                if (value.toString().length < 8) {
-                  return 'Password must be at least 8 characters';
-                }
-                return null;
-              },
+                const SizedBox(height: 16),
+                TextFormField(
+                  initialValue: _password,
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    hintText: 'Create a password',
+                    prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Password is required';
+                    }
+                    if (value.length < 8) {
+                      return 'Password must be at least 8 characters';
+                    }
+                    return null;
+                  },
+                  onChanged: (value) {
+                    setState(() {
+                      _password = value;
+                    });
+                    _updateData();
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
   
-  void _updateFormData(FormStepData updatedFormData) {
+  void _validateForm() {
+    final isValid = _formKey.currentState?.validate() ?? false;
     setState(() {
-      _formData = updatedFormData;
+      _isValid = isValid;
     });
     
+    // Update validation status in the bloc
+    final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context);
+    bloc.validateStep(_isValid);
+  }
+  
+  void _updateData() {
     final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context);
     final currentData = bloc.state.currentStep.data;
     
     final updatedData = currentData.copyWith(
-      email: _formData.getField<String>('email'),
-      password: _formData.getField<String>('password'),
+      email: _email,
+      password: _password,
     );
     
     bloc.updateStepData(updatedData);
-    bloc.add(FlowEvent.stepValidated(isValid: _formData.isFormValid));
   }
 }
 
@@ -386,7 +467,7 @@ class _PreferencesFormState extends State<PreferencesForm> {
     _selectedTheme = currentData.preferredTheme ?? 'system';
     
     // Preferences step is always valid
-    bloc.add(const FlowEvent.stepValidated(isValid: true));
+    bloc.validateStep(true);
   }
   
   @override

@@ -2,58 +2,68 @@ import 'dart:async';
 import 'package:test/test.dart';
 import 'package:multi_step_flow/multi_step_flow.dart';
 
-/// A simplified testing approach for the FlowController
+/// Tests for the new FlowBloc implementation
 void main() {
-  group('FlowController', () {
-    late FlowController controller;
-    late List<FlowStep> steps;
+  group('FlowBloc', () {
+    late FlowBloc<TestData> bloc;
+    late List<FlowStep<TestData>> steps;
 
     setUp(() {
       steps = [
-        TestStep(id: '1'),
-        TestStep(id: '2', isSkippable: true),
-        TestStep(id: '3'),
+        FlowStep<TestData>(
+          id: '1', 
+          data: const TestData(value: 'test1'),
+        ),
+        FlowStep<TestData>(
+          id: '2', 
+          isSkippable: true, 
+          data: const TestData(value: 'test2'),
+        ),
+        FlowStep<TestData>(
+          id: '3', 
+          data: const TestData(value: 'test3'),
+        ),
       ];
-      controller = FlowController(steps: steps);
+      bloc = FlowBloc<TestData>(steps: steps);
     });
 
     tearDown(() async {
-      await controller.dispose();
+      await bloc.close();
     });
 
     test('initial state is correct', () {
-      expect(controller.currentState.steps, steps);
-      expect(controller.currentState.currentStepIndex, 0);
-      expect(controller.currentState.status, FlowStatus.initial);
-      expect(controller.currentState.validatedSteps, isEmpty);
-      expect(controller.currentState.skippedSteps, isEmpty);
+      expect(bloc.state.steps, steps);
+      expect(bloc.state.currentStepIndex, 0);
+      expect(bloc.state.status, FlowStatus.initial);
+      expect(bloc.state.validatedSteps, isEmpty);
+      expect(bloc.state.skippedSteps, isEmpty);
     });
 
-    test('flowcontroller exposes correct convenience properties', () {
-      // Check that helper getters work correctly
-      expect(controller.currentStep, steps.first);
-      expect(controller.hasNext, true);
-      expect(controller.hasPrevious, false);
-      expect(controller.isComplete, false);
-      expect(controller.stepCount, 3);
-      expect(controller.currentStepIndex, 0);
-      expect(controller.isCurrentStepValidated, false);
-      expect(controller.isCurrentStepSkipped, false);
+    test('bloc exposes correct state properties', () {
+      // Check that state properties are accessible
+      expect(bloc.state.currentStep, steps.first);
+      expect(bloc.state.hasNext, true);
+      expect(bloc.state.hasPrevious, false);
+      expect(bloc.state.isComplete, false);
+      expect(bloc.steps.length, 3);
+      expect(bloc.state.currentStepIndex, 0);
+      expect(bloc.state.validatedSteps.contains(steps.first.id), false);
+      expect(bloc.state.skippedSteps.contains(steps.first.id), false);
     });
 
-    test('complete() changes status to completed', () async {
+    test('completeFlow() changes status to completed', () async {
       // Create a completer to wait for status change
       final completer = Completer<void>();
 
       // Listen for completed status
-      final subscription = controller.stateStream.listen((state) {
+      final subscription = bloc.stream.listen((state) {
         if (state.status == FlowStatus.completed && !completer.isCompleted) {
           completer.complete();
         }
       });
 
       // Trigger completion
-      controller.complete();
+      bloc.completeFlow();
 
       // Wait for completion with timeout
       await completer.future.timeout(
@@ -66,25 +76,32 @@ void main() {
       await subscription.cancel();
 
       // Now verify the status
-      expect(controller.currentState.status, FlowStatus.completed);
+      expect(bloc.state.status, FlowStatus.completed);
     });
 
-    test('reset() restores initial state', () {
-      // Because reset() is a synchronous operation we can test it directly
-      controller.reset();
+    test('resetFlow() restores initial state', () async {
+      // First move to next step and validate it
+      bloc.nextStep();
+      bloc.validateStep(true);
+      
+      // Then reset
+      bloc.resetFlow();
+
+      // Wait a bit for the state to update
+      await Future.delayed(Duration.zero);
 
       // Verify reset state
-      expect(controller.currentStepIndex, 0);
-      expect(controller.currentState.validatedSteps, isEmpty);
-      expect(controller.currentState.skippedSteps, isEmpty);
+      expect(bloc.state.currentStepIndex, 0);
+      expect(bloc.state.validatedSteps, isEmpty);
+      expect(bloc.state.skippedSteps, isEmpty);
     });
 
-    test('controller streams emit state changes', () async {
+    test('bloc stream emits state changes', () async {
       // Setup stream listener
-      final statesReceived = <FlowState>[];
+      final statesReceived = <FlowState<TestData>>[];
       final completed = Completer<void>();
 
-      final subscription = controller.stateStream.listen((state) {
+      final subscription = bloc.stream.listen((state) {
         statesReceived.add(state);
         if (state.status == FlowStatus.completed && !completed.isCompleted) {
           completed.complete();
@@ -92,7 +109,7 @@ void main() {
       });
 
       // Trigger a state change
-      controller.complete();
+      bloc.completeFlow();
 
       // Wait for state change with timeout
       await completed.future.timeout(
@@ -109,123 +126,100 @@ void main() {
       // Clean up
       await subscription.cancel();
     });
+    
+    test('navigation methods change current step index', () async {
+      // Initially at index 0
+      expect(bloc.state.currentStepIndex, 0);
+      
+      // Move to step 1
+      bloc.nextStep();
+      expect(bloc.state.currentStepIndex, 1);
+      
+      // Move back to step 0
+      bloc.previousStep();
+      expect(bloc.state.currentStepIndex, 0);
+      
+      // Skip to step 1 (which is skippable)
+      bloc.goToStep(1); // Using index 1 for the second step
+      bloc.skipStep();
+      
+      // Should now be at step 2 (index 2)
+      expect(bloc.state.currentStepIndex, 2);
+      expect(bloc.state.skippedSteps.contains('2'), true);
+    });
   });
 
   group('FlowStep', () {
-    test('provides data access via getValue', () {
-      final data = {'key': 'value', 'number': 42};
-      final step = TestStep(id: 'test', data: data);
-
-      expect(step.getValue<String>('key'), 'value');
-      expect(step.getValue<int>('number'), 42);
-      expect(step.getValue<bool>('nonexistent'), null);
-      expect(step.getValue<bool>('nonexistent', true), true);
-    });
-
-    test('defaults to valid in validate method', () async {
-      final step = TestStep(id: 'test');
-      expect(await step.validate(), false); // Default is false in TestStep
-
-      final validStep = TestStep(id: 'valid', shouldValidate: true);
-      expect(await validStep.validate(), true);
-    });
-
-    test('lifecycle hooks can be overridden', () async {
-      final events = <String>[];
-
-      final step = TestStep(
+    test('provides data access', () {
+      final step = FlowStep<TestData>(
         id: 'test',
-        onEnterFn: () => events.add('enter'),
-        onExitFn: () => events.add('exit'),
-        onSkipFn: () => events.add('skip'),
+        data: const TestData(value: 'test-value', number: 42),
       );
 
-      await step.onEnter();
-      await step.onExit();
-      await step.onSkip();
-
-      expect(events, ['enter', 'exit', 'skip']);
+      expect(step.data.value, 'test-value');
+      expect(step.data.number, 42);
+      expect(step.data.flag, false); // Default value
     });
 
-    test('copyWith preserves all properties when none specified', () {
-      final original = TestStep(
+    test('step data can be updated', () {
+      final original = FlowStep<TestData>(
         id: 'test',
-        title: 'Test Step',
-        description: 'Description',
+        data: const TestData(value: 'original'),
+      );
+      
+      final updated = original.copyWith(
+        data: const TestData(value: 'updated'),
+      );
+      
+      expect(updated.id, original.id); // Same id
+      expect(updated.data.value, 'updated'); // Updated value
+    });
+
+    test('step properties can be updated with copyWith', () {
+      final original = FlowStep<TestData>(
+        id: 'test',
+        title: 'Original Title',
+        description: 'Original Description',
+        isSkippable: false,
+        data: const TestData(value: 'original'),
+      );
+      
+      final updated = original.copyWith(
+        title: 'New Title',
+        description: 'New Description',
         isSkippable: true,
-        timeLimit: Duration(seconds: 30),
-        data: {'key': 'value'},
       );
-
-      final copy = original.copyWith();
-
-      expect(copy.id, original.id);
-      expect(copy.title, original.title);
-      expect(copy.description, original.description);
-      expect(copy.isSkippable, original.isSkippable);
-      expect(copy.timeLimit, original.timeLimit);
-      expect(copy.data, original.data);
+      
+      expect(updated.id, original.id); // ID remains the same
+      expect(updated.title, 'New Title');
+      expect(updated.description, 'New Description');
+      expect(updated.isSkippable, true);
+      expect(updated.data.value, 'original'); // Data unchanged
     });
   });
 }
 
-class TestStep extends FlowStep {
-  TestStep({
-    required super.id,
-    String? title,
-    super.description,
-    super.isSkippable,
-    super.timeLimit,
-    super.data,
-    this.shouldValidate = false,
-    this.onEnterFn,
-    this.onExitFn,
-    this.onSkipFn,
-  }) : super(title: title ?? 'Test Step');
-
-  final bool shouldValidate;
-  final Function? onEnterFn;
-  final Function? onExitFn;
-  final Function? onSkipFn;
-
-  @override
-  Future<bool> validate() async => shouldValidate;
-
-  @override
-  Future<void> onEnter() async {
-    if (onEnterFn != null) onEnterFn!();
-  }
-
-  @override
-  Future<void> onExit() async {
-    if (onExitFn != null) onExitFn!();
-  }
-
-  @override
-  Future<void> onSkip() async {
-    if (onSkipFn != null) onSkipFn!();
-  }
-
-  @override
-  FlowStep copyWith({
-    String? id,
-    String? title,
-    String? description,
-    bool? isSkippable,
-    Duration? timeLimit,
-    Map<String, dynamic>? data,
+/// Test data class for use in tests
+class TestData {
+  final String value;
+  final int? number;
+  final bool flag;
+  
+  const TestData({
+    required this.value,
+    this.number,
+    this.flag = false,
+  });
+  
+  TestData copyWith({
+    String? value,
+    int? number,
+    bool? flag,
   }) {
-    return TestStep(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      isSkippable: isSkippable ?? this.isSkippable,
-      timeLimit: timeLimit ?? this.timeLimit,
-      data: data ?? this.data,
-      shouldValidate: shouldValidate,
-      onEnterFn: onEnterFn,
-      onExitFn: onExitFn,
-      onSkipFn: onSkipFn,
+    return TestData(
+      value: value ?? this.value,
+      number: number ?? this.number,
+      flag: flag ?? this.flag,
     );
   }
 }

@@ -3,156 +3,155 @@ import 'package:multi_step_flow/multi_step_flow.dart';
 void main() {
   // Create custom steps
   final steps = [
-    RegistrationStep(
+    FlowStep<RegistrationData>(
       id: 'personal_info',
       title: 'Personal Information',
       description: 'Enter your personal details',
+      // Make the first step skippable so navigation is enabled
+      isSkippable: true,
+      data: RegistrationData(
+        type: StepType.personal,
+        fields: {'name': '', 'email': ''},
+        isValid: true, // Pre-validate for navigation
+      ),
     ),
-    RegistrationStep(
+    FlowStep<RegistrationData>(
       id: 'account_details',
       title: 'Account Details',
       description: 'Set up your account credentials',
+      data: RegistrationData(
+        type: StepType.account,
+        fields: {'username': '', 'password': ''},
+      ),
     ),
-    RegistrationStep(
+    FlowStep<RegistrationData>(
       id: 'confirmation',
       title: 'Confirmation',
       description: 'Review and confirm your information',
       isSkippable: true,
-      // Example of using step data
-      data: {
-        'showTermsCheckbox': true,
-        'requiredFields': ['name', 'email'],
-      },
+      data: RegistrationData(
+        type: StepType.confirmation,
+        fields: {
+          'showTermsCheckbox': true,
+          'requiredFields': ['name', 'email'],
+          'termsAccepted': false,
+        },
+      ),
     ),
   ];
 
-  // Initialize flow controller with steps and configuration
-  final controller = FlowController(
+  // Initialize flow bloc with steps and configuration
+  final bloc = FlowBloc<RegistrationData>(
     steps: steps,
     configuration: const FlowConfiguration(
+      allowBackNavigation: true,
       autoAdvanceOnValidation: true,
-      validateOnStepChange: true,
     ),
   );
+  
+  // Ensure the first step is validated so navigation works
+  bloc.validateStep(true);
 
   // Listen to flow state changes
-  controller.stateStream.listen((state) {
-    print('Current step: ${state.currentStep?.id}');
+  bloc.stream.listen((state) {
+    print('Current step: ${state.currentStep.id}');
     print('Status: ${state.status}');
   });
 
-  // Listen to flow errors
-  controller.errorStream.listen((error) {
-    print('Error: $error');
-  });
-
-  // Example usage of the async API
-  performFlow(controller);
+  // Example usage of the bloc API
+  performFlow(bloc);
 }
 
-Future<void> performFlow(FlowController controller) async {
+Future<void> performFlow(FlowBloc<RegistrationData> bloc) async {
   try {
-    // Move to next step with async API
-    await controller.next();
+    // Move to next step
+    bloc.nextStep();
     print('Moved to next step');
 
     // Validate the current step
-    await controller.validate(true);
+    bloc.validateStep(true);
     print('Validated current step');
 
     // Skip a step if it's skippable
-    if (controller.currentStep!.isSkippable) {
-      await controller.skip();
+    if (bloc.state.currentStep.isSkippable) {
+      bloc.skipStep();
       print('Skipped optional step');
     }
 
     // Complete the flow
-    await controller.complete();
+    bloc.completeFlow();
     print('Flow completed');
   } catch (e) {
     print('Flow error: $e');
   } finally {
     // Cleanup
-    await controller.dispose();
-    print('Controller disposed');
+    bloc.close();
+    print('Bloc closed');
   }
 }
 
-/// Example custom step implementation
-class RegistrationStep extends FlowStep {
-  RegistrationStep({
-    required super.id,
-    super.title,
-    super.description,
-    super.isSkippable,
-    super.timeLimit,
-    super.data,
+/// Simple enum to identify step type
+enum StepType { personal, account, confirmation }
+
+/// Example step data implementation without using freezed
+class RegistrationData {
+  final StepType type;
+  final Map<String, dynamic> fields;
+  final bool isValid;
+  
+  const RegistrationData({
+    required this.type,
+    required this.fields,
+    this.isValid = false,
   });
 
-  final _emailInput = const EmailInput.pure();
-  final _passwordInput = const PasswordInput.pure();
-
-  @override
-  Future<bool> validate() async {
-    // Example of accessing step data to determine validation rules
-    final requiredFields = getValue<List<dynamic>>('requiredFields') ?? [];
-
-    final emailValid = _emailInput.validator(_emailInput.value) == null;
-    final passwordValid =
-        _passwordInput.validator(_passwordInput.value) == null;
-
-    // If no required fields specified, use default validation
-    if (requiredFields.isEmpty) {
-      return emailValid && passwordValid;
+  // Get a field value
+  T? getValue<T>(String key) {
+    if (fields.containsKey(key)) {
+      final value = fields[key];
+      if (value is T) return value;
     }
-
-    // Otherwise, validate only required fields
-    bool isValid = true;
-    if (requiredFields.contains('email')) {
-      isValid = isValid && emailValid;
-    }
-    if (requiredFields.contains('password')) {
-      isValid = isValid && passwordValid;
-    }
-
-    return isValid;
+    return null;
   }
-
-  @override
-  Future<void> onEnter() async {
-    print('Entering step $id');
-    // Example of analytics tracking
-    if (data != null && data!.containsKey('trackingEvent')) {
-      print('Tracking event: ${data!['trackingEvent']}');
-    }
-  }
-
-  @override
-  Future<void> onExit() async {
-    print('Exiting step $id');
-  }
-
-  @override
-  Future<void> onSkip() async {
-    print('Skipping step $id');
-  }
-
-  @override
-  FlowStep copyWith({
-    String? id,
-    String? title,
-    String? description,
-    bool? isSkippable,
-    Duration? timeLimit,
-    Map<String, dynamic>? data,
+  
+  // Create a copy with updated fields
+  RegistrationData copyWith({
+    StepType? type,
+    Map<String, dynamic>? fields,
+    bool? isValid,
   }) {
-    return RegistrationStep(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      isSkippable: isSkippable ?? this.isSkippable,
-      timeLimit: timeLimit ?? this.timeLimit,
-      data: data ?? this.data,
+    return RegistrationData(
+      type: type ?? this.type,
+      fields: fields != null ? Map.from(fields) : Map.from(this.fields),
+      isValid: isValid ?? this.isValid,
     );
+  }
+}
+
+/// Helper for form validation
+class EmailInput {
+  const EmailInput.pure() : value = '';
+  const EmailInput.dirty(this.value);
+
+  final String value;
+
+  String? validator(String? value) {
+    if (value == null || value.isEmpty) return 'Email is required';
+    if (!value.contains('@')) return 'Invalid email format';
+    return null;
+  }
+}
+
+/// Helper for password validation
+class PasswordInput {
+  const PasswordInput.pure() : value = '';
+  const PasswordInput.dirty(this.value);
+
+  final String value;
+
+  String? validator(String? value) {
+    if (value == null || value.isEmpty) return 'Password is required';
+    if (value.length < 8) return 'Password must be at least 8 characters';
+    return null;
   }
 }
