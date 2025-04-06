@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:multi_step_flow/multi_step_flow.dart';
 import 'package:multi_step_widgets/multi_step_widgets.dart';
 
 void main() {
@@ -19,7 +18,7 @@ void main() {
       );
 
       expect(find.byType(AnimatedContainer), findsNWidgets(3));
-      
+
       // Clean up
       bloc.close();
     });
@@ -59,7 +58,7 @@ void main() {
 
       expect(firstDecoration.color, Colors.grey);
       expect(activeDecoration.color, Colors.blue);
-      
+
       // Clean up
       bloc.close();
     });
@@ -67,9 +66,7 @@ void main() {
 
   group('FlowLayout', () {
     testWidgets('renders step content and navigation bar', (tester) async {
-      final steps = [
-        FlowStep<TestData>(id: '1', data: TestData()),
-      ];
+      final steps = [FlowStep<TestData>(id: '1', data: TestData())];
       final bloc = FlowBloc<TestData>(steps: steps);
 
       await tester.pumpWidget(
@@ -85,15 +82,13 @@ void main() {
 
       expect(find.text('Step Content'), findsOneWidget);
       expect(find.byType(FlowNavigationBar<TestData>), findsOneWidget);
-      
+
       // Clean up
       bloc.close();
     });
 
     testWidgets('supports custom indicator', (tester) async {
-      final steps = [
-        FlowStep<TestData>(id: '1', data: TestData()),
-      ];
+      final steps = [FlowStep<TestData>(id: '1', data: TestData())];
       final bloc = FlowBloc<TestData>(steps: steps);
 
       await tester.pumpWidget(
@@ -109,15 +104,13 @@ void main() {
       );
 
       expect(find.text('Step 1 of 1'), findsOneWidget);
-      
+
       // Clean up
       bloc.close();
     });
 
     testWidgets('respects showNavigationBar option', (tester) async {
-      final steps = [
-        FlowStep<TestData>(id: '1', data: TestData()),
-      ];
+      final steps = [FlowStep<TestData>(id: '1', data: TestData())];
       final bloc = FlowBloc<TestData>(steps: steps);
 
       await tester.pumpWidget(
@@ -133,7 +126,7 @@ void main() {
       );
 
       expect(find.byType(FlowNavigationBar<TestData>), findsNothing);
-      
+
       // Clean up
       bloc.close();
     });
@@ -142,11 +135,9 @@ void main() {
 
 /// Custom text-based step indicator for testing
 class TextStepIndicator<T> extends StepIndicator<T> {
-  const TextStepIndicator({
-    Key? key,
-    required this.bloc,
-  }) : super(key: key, bloc: bloc);
-  
+  const TextStepIndicator({super.key, required this.bloc}) : super(bloc: bloc);
+
+  @override
   final FlowBloc<T> bloc;
 
   @override
@@ -158,6 +149,6 @@ class TextStepIndicator<T> extends StepIndicator<T> {
 /// Test data class for testing
 class TestData {
   final String value;
-  
+
   TestData({this.value = 'test'});
 }

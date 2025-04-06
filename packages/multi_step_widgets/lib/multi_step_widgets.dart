@@ -2,7 +2,7 @@
 ///
 /// This library provides widgets for building multi-step flows, forms, and wizards.
 /// It integrates with the multi_step_flow package for state management.
-library multi_step_widgets;
+library;
 
 // Flow building
 export 'src/flow_builder.dart';

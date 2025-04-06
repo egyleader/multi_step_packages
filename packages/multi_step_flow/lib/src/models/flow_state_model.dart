@@ -5,22 +5,22 @@ import 'flow_step.dart';
 class FlowState<TStepData> {
   /// List of all steps in the flow
   final List<FlowStep<TStepData>> steps;
-  
+
   /// Index of the current step
   final int currentStepIndex;
-  
+
   /// Current status of the flow
   final FlowStatus status;
-  
+
   /// Error message if status is [FlowStatus.error]
   final String? error;
-  
+
   /// Set of step IDs that have been validated
   final Set<String> validatedSteps;
-  
+
   /// Set of step IDs that have been skipped
   final Set<String> skippedSteps;
-  
+
   /// Creates a new [FlowState] with the given properties
   const FlowState({
     required this.steps,
@@ -30,36 +30,36 @@ class FlowState<TStepData> {
     this.validatedSteps = const {},
     this.skippedSteps = const {},
   });
-  
-  /// The current step - this is non-nullable and will throw an error if the 
+
+  /// The current step - this is non-nullable and will throw an error if the
   /// flow has no steps
   FlowStep<TStepData> get currentStep {
     if (steps.isEmpty) {
       throw StateError('Flow has no steps');
     }
-    
+
     if (currentStepIndex < 0 || currentStepIndex >= steps.length) {
       return steps.first; // Fallback to first step
     }
-    
+
     return steps[currentStepIndex];
   }
-  
+
   /// Whether there is a next step available
   bool get hasNext => currentStepIndex < steps.length - 1;
-  
+
   /// Whether there is a previous step available
   bool get hasPrevious => currentStepIndex > 0;
-  
+
   /// Whether the flow is complete
   bool get isComplete => status == FlowStatus.completed;
-  
+
   /// Whether the current step is validated
   bool get isCurrentStepValidated => validatedSteps.contains(currentStep.id);
-  
+
   /// Whether the current step is skipped
   bool get isCurrentStepSkipped => skippedSteps.contains(currentStep.id);
-  
+
   /// Creates a copy of the flow state with updated properties
   FlowState<TStepData> copyWith({
     List<FlowStep<TStepData>>? steps,
@@ -78,7 +78,7 @@ class FlowState<TStepData> {
       skippedSteps: skippedSteps ?? this.skippedSteps,
     );
   }
-  
+
   /// Converts the state to a JSON map
   Map<String, dynamic> toJson() {
     return {
@@ -89,7 +89,7 @@ class FlowState<TStepData> {
       'skippedSteps': skippedSteps.toList(),
     };
   }
-  
+
   /// Creates a FlowState from a JSON map
   static FlowState<TStepData> fromJson<TStepData>(
     Map<String, dynamic> json,
@@ -104,11 +104,11 @@ class FlowState<TStepData> {
       skippedSteps: _parseStringList(json['skippedSteps']),
     );
   }
-  
+
   /// Parse a FlowStatus from a string
   static FlowStatus _parseStatus(String? statusStr) {
     if (statusStr == null) return FlowStatus.initial;
-    
+
     switch (statusStr) {
       case 'FlowStatus.initial':
         return FlowStatus.initial;
@@ -126,18 +126,18 @@ class FlowState<TStepData> {
         return FlowStatus.initial;
     }
   }
-  
+
   /// Parse a list of strings
   static Set<String> _parseStringList(dynamic value) {
     if (value == null) return {};
-    
+
     if (value is List) {
       return value.whereType<String>().toSet();
     }
-    
+
     return {};
   }
-  
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -159,7 +159,7 @@ class FlowState<TStepData> {
       Object.hashAll(skippedSteps),
     );
   }
-  
+
   bool _setsEqual(Set a, Set b) {
     if (a.length != b.length) return false;
     for (final element in a) {

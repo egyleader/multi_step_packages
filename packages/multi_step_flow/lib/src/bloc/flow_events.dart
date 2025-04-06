@@ -9,55 +9,48 @@ abstract class FlowEvent {
   const FlowEvent();
 
   /// Flow initialized event
-  const factory FlowEvent.initialized({
-    FlowConfiguration? configuration,
-  }) = FlowInitialized;
-  
+  const factory FlowEvent.initialized({FlowConfiguration? configuration}) =
+      FlowInitialized;
+
   /// Next button pressed event
   const factory FlowEvent.nextPressed() = FlowNextPressed;
-  
+
   /// Previous button pressed event
   const factory FlowEvent.previousPressed() = FlowPreviousPressed;
-  
+
   /// Skip button pressed event
   const factory FlowEvent.skipPressed() = FlowStepSkipped;
-  
+
   /// Step validated event
-  const factory FlowEvent.stepValidated({
-    required bool isValid,
-  }) = FlowStepValidated;
-  
+  const factory FlowEvent.stepValidated({required bool isValid}) =
+      FlowStepValidated;
+
   /// Step timer completed event
   const factory FlowEvent.stepTimerCompleted() = FlowStepTimerCompleted;
-  
+
   /// Step selected event
-  const factory FlowEvent.stepSelected({
-    required int index,
-  }) = FlowStepSelected;
-  
+  const factory FlowEvent.stepSelected({required int index}) = FlowStepSelected;
+
   /// Error occurred event
-  const factory FlowEvent.errorOccurred({
-    required String message,
-  }) = FlowErrorOccurred;
-  
+  const factory FlowEvent.errorOccurred({required String message}) =
+      FlowErrorOccurred;
+
   /// Reset flow event
   const factory FlowEvent.reset() = FlowReset;
-  
+
   /// Flow completed event
   const factory FlowEvent.completed() = FlowCompleted;
-  
+
   /// Loading event
   const factory FlowEvent.loading() = FlowLoading;
-  
+
   /// Steps modified event
-  const factory FlowEvent.stepsModified({
-    required List<FlowStep> steps,
-  }) = FlowStepsModified;
-  
+  const factory FlowEvent.stepsModified({required List<FlowStep> steps}) =
+      FlowStepsModified;
+
   /// Step data updated event
-  const factory FlowEvent.stepDataUpdated({
-    required dynamic data,
-  }) = FlowStepDataUpdated;
+  const factory FlowEvent.stepDataUpdated({required dynamic data}) =
+      FlowStepDataUpdated;
 }
 
 /// Flow initialized event

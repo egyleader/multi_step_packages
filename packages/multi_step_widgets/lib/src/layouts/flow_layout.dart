@@ -7,30 +7,29 @@ import '../indicators/base_indicator.dart';
 import '../indicators/dots_indicator.dart';
 import '../navigation/flow_navigation_bar.dart';
 import '../theme/flow_theme.dart';
-import '../theme/indicator_theme.dart';
 
 /// Scroll direction for flow content
 enum FlowScrollDirection {
   /// Horizontal scrolling
   horizontal,
-  
+
   /// Vertical scrolling
   vertical,
-  
+
   /// No scrolling
-  none
+  none,
 }
 
 /// Position of the step indicator
 enum IndicatorPosition {
   /// Indicator at the top of the layout
   top,
-  
+
   /// Indicator at the bottom of the layout
   bottom,
-  
+
   /// No indicator shown
-  none
+  none,
 }
 
 /// A standard layout for multi-step flows
@@ -64,7 +63,8 @@ class FlowLayout<TStepData> extends StatelessWidget {
   final FlowTheme? theme;
 
   /// Builder for custom step indicator
-  final StepIndicator<TStepData> Function(FlowState<TStepData> state)? indicatorBuilder;
+  final StepIndicator<TStepData> Function(FlowState<TStepData> state)?
+  indicatorBuilder;
 
   /// Builder for custom navigation bar
   final Widget Function(FlowState<TStepData> state)? navigationBarBuilder;
@@ -113,8 +113,9 @@ class FlowLayout<TStepData> extends StatelessWidget {
             children.add(
               Padding(
                 padding: indicatorPadding,
-                child: indicatorBuilder?.call(state) ??
-                      DotsIndicator<TStepData>(bloc: bloc),
+                child:
+                    indicatorBuilder?.call(state) ??
+                    DotsIndicator<TStepData>(bloc: bloc),
               ),
             );
           }
@@ -125,7 +126,8 @@ class FlowLayout<TStepData> extends StatelessWidget {
               child: FlowBuilder<TStepData>(
                 bloc: bloc,
                 stepBuilder: stepBuilder,
-                transitionDuration: customTransitionDuration ?? 
+                transitionDuration:
+                    customTransitionDuration ??
                     const Duration(milliseconds: 300),
                 transitionCurve: customTransitionCurve ?? Curves.easeInOut,
                 animateTransitions: scrollDirection == FlowScrollDirection.none,
@@ -139,8 +141,9 @@ class FlowLayout<TStepData> extends StatelessWidget {
             children.add(
               Padding(
                 padding: indicatorPadding,
-                child: indicatorBuilder?.call(state) ??
-                      DotsIndicator<TStepData>(bloc: bloc),
+                child:
+                    indicatorBuilder?.call(state) ??
+                    DotsIndicator<TStepData>(bloc: bloc),
               ),
             );
           }
@@ -149,7 +152,7 @@ class FlowLayout<TStepData> extends StatelessWidget {
           if (showNavigationBar) {
             children.add(
               navigationBarBuilder?.call(state) ??
-                  FlowNavigationBar<TStepData>(bloc: bloc)
+                  FlowNavigationBar<TStepData>(bloc: bloc),
             );
           }
 

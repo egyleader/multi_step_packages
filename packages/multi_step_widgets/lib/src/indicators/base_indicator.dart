@@ -5,12 +5,7 @@ import '../theme/indicator_theme.dart';
 
 /// Abstract class for step indicators with generic type support
 abstract class StepIndicator<TStepData> extends StatelessWidget {
-  const StepIndicator({
-    super.key,
-    this.bloc,
-    this.onStepTapped,
-    this.theme,
-  });
+  const StepIndicator({super.key, this.bloc, this.onStepTapped, this.theme});
 
   /// Optional FlowBloc instance
   /// If not provided, it will be obtained from the nearest BlocProvider
@@ -25,7 +20,7 @@ abstract class StepIndicator<TStepData> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final flowBloc = bloc ?? BlocProvider.of<FlowBloc<TStepData>>(context);
-    
+
     return BlocBuilder<FlowBloc<TStepData>, FlowState<TStepData>>(
       bloc: flowBloc,
       builder: (context, state) {
@@ -38,7 +33,7 @@ abstract class StepIndicator<TStepData> extends StatelessWidget {
   Widget buildIndicator(BuildContext context, FlowState<TStepData> state);
 
   /// Whether the flow is complete
-  bool isComplete(FlowState<TStepData> state) => 
+  bool isComplete(FlowState<TStepData> state) =>
       state.status == FlowStatus.completed;
 
   /// Total number of steps
@@ -48,7 +43,11 @@ abstract class StepIndicator<TStepData> extends StatelessWidget {
   int getCurrentStepIndex(FlowState<TStepData> state) => state.currentStepIndex;
 
   /// Get the color for a step at the given index
-  Color getStepColor(BuildContext context, FlowState<TStepData> state, int index) {
+  Color getStepColor(
+    BuildContext context,
+    FlowState<TStepData> state,
+    int index,
+  ) {
     final colors = theme?.resolve(Theme.of(context).colorScheme);
     if (colors == null) return Theme.of(context).primaryColor;
 
@@ -88,7 +87,11 @@ abstract class StepIndicator<TStepData> extends StatelessWidget {
   }
 
   /// Handle step tap
-  void handleStepTap(BuildContext context, FlowState<TStepData> state, int index) {
+  void handleStepTap(
+    BuildContext context,
+    FlowState<TStepData> state,
+    int index,
+  ) {
     if (canSelectStep(state, index)) {
       if (onStepTapped != null) {
         onStepTapped?.call(index);

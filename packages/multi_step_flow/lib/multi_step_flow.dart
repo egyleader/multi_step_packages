@@ -2,7 +2,7 @@
 ///
 /// This package provides a state management solution for multi-step flows and forms.
 /// It handles navigation between steps, validation, data persistence, and more.
-library multi_step_flow;
+library;
 
 // Core models
 export 'src/models/flow_configuration.dart';

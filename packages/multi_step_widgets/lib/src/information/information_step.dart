@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:multi_step_flow/multi_step_flow.dart';
 
 /// A widget for displaying information-type steps with read tracking
@@ -16,7 +15,8 @@ class InformationStepBuilder<TStepData> extends StatefulWidget {
     BuildContext context,
     InformationStepData infoData,
     void Function(InformationStepData) onUpdate,
-  ) contentBuilder;
+  )
+  contentBuilder;
 
   /// Function to extract InformationStepData from the step data
   final InformationStepData Function(TStepData?) infoDataExtractor;
@@ -32,11 +32,11 @@ class InformationStepBuilder<TStepData> extends StatefulWidget {
 
   /// Optional progress indicator builder
   final Widget Function(BuildContext context, InformationStepData infoData)?
-      progressIndicatorBuilder;
+  progressIndicatorBuilder;
 
   /// Constructor for [InformationStepBuilder]
   const InformationStepBuilder({
-    Key? key,
+    super.key,
     required this.bloc,
     required this.step,
     required this.contentBuilder,
@@ -45,7 +45,7 @@ class InformationStepBuilder<TStepData> extends StatefulWidget {
     this.enableAutoReadTracking = true,
     this.showProgressIndicator = true,
     this.progressIndicatorBuilder,
-  }) : super(key: key);
+  });
 
   @override
   _InformationStepBuilderState<TStepData> createState() =>
@@ -59,17 +59,17 @@ class _InformationStepBuilderState<TStepData>
   Timer? _autoAdvanceTimer;
   final ScrollController _scrollController = ScrollController();
   bool _isScrollable = false;
-  
+
   @override
   void initState() {
     super.initState();
     _infoData = widget.infoDataExtractor(widget.step.data);
-    
+
     // Start the view timer
     if (widget.enableAutoReadTracking) {
       _startViewTimer();
     }
-    
+
     // Set up scroll listeners for progress tracking
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -107,7 +107,7 @@ class _InformationStepBuilderState<TStepData>
     _viewTimer?.cancel();
     _viewTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       _updateInfoData(_infoData.incrementViewTime(1));
-      
+
       // Check for auto-advance
       if (_infoData.shouldAutoAdvance() && _autoAdvanceTimer == null) {
         _startAutoAdvanceTimer();
@@ -124,39 +124,41 @@ class _InformationStepBuilderState<TStepData>
       },
     );
   }
-  
+
   // Reset all timers
   void _resetTimers() {
     _viewTimer?.cancel();
     _autoAdvanceTimer?.cancel();
     _autoAdvanceTimer = null;
-    
+
     if (widget.enableAutoReadTracking) {
       _startViewTimer();
     }
   }
-  
+
   // Update scroll progress based on scroll position
   void _updateScrollProgress() {
-    if (!_scrollController.hasClients || _scrollController.position.maxScrollExtent == 0) {
+    if (!_scrollController.hasClients ||
+        _scrollController.position.maxScrollExtent == 0) {
       return;
     }
-    
-    final scrollProgress = _scrollController.offset / _scrollController.position.maxScrollExtent;
+
+    final scrollProgress =
+        _scrollController.offset / _scrollController.position.maxScrollExtent;
     _updateInfoData(_infoData.updateProgress(scrollProgress));
   }
-  
+
   // Update info data and sync with bloc
   void _updateInfoData(InformationStepData updated) {
     if (updated != _infoData) {
       setState(() {
         _infoData = updated;
       });
-      
+
       // Update the step data in the bloc
       final updatedStepData = widget.infoDataUpdater(widget.step.data, updated);
       widget.bloc.add(FlowEvent.stepDataUpdated(data: updatedStepData));
-      
+
       // Mark step as validated if it's considered read
       if (updated.isRead || updated.isViewComplete) {
         widget.bloc.add(const FlowEvent.stepValidated(isValid: true));
@@ -174,14 +176,10 @@ class _InformationStepBuilderState<TStepData>
           child: SingleChildScrollView(
             controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
-            child: widget.contentBuilder(
-              context,
-              _infoData,
-              _updateInfoData,
-            ),
+            child: widget.contentBuilder(context, _infoData, _updateInfoData),
           ),
         ),
-        
+
         // Progress indicator (optional)
         if (widget.showProgressIndicator)
           widget.progressIndicatorBuilder?.call(context, _infoData) ??
@@ -189,10 +187,10 @@ class _InformationStepBuilderState<TStepData>
       ],
     );
   }
-  
+
   Widget _buildDefaultProgressIndicator(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -201,7 +199,9 @@ class _InformationStepBuilderState<TStepData>
           LinearProgressIndicator(
             value: _infoData.viewProgress,
             backgroundColor: theme.disabledColor.withOpacity(0.2),
-            valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              theme.colorScheme.primary,
+            ),
           ),
           const SizedBox(height: 8),
           Row(
@@ -227,28 +227,28 @@ class _InformationStepBuilderState<TStepData>
 class InformationStepLayout extends StatelessWidget {
   /// The title of the information step
   final String? title;
-  
+
   /// The description of the information step
   final String? description;
-  
+
   /// The main content of the information step
   final Widget child;
-  
+
   /// Style for the title
   final TextStyle? titleStyle;
-  
+
   /// Style for the description
   final TextStyle? descriptionStyle;
-  
+
   /// Additional actions to show in the header
   final List<Widget>? actions;
-  
+
   /// Spacing between elements
   final double spacing;
-  
+
   /// Constructor for [InformationStepLayout]
   const InformationStepLayout({
-    Key? key,
+    super.key,
     this.title,
     this.description,
     required this.child,
@@ -256,13 +256,13 @@ class InformationStepLayout extends StatelessWidget {
     this.descriptionStyle,
     this.actions,
     this.spacing = 24.0,
-  }) : super(key: key);
-  
+  });
+
   @override
   Widget build(BuildContext context) {
     final defaultTitleStyle = Theme.of(context).textTheme.headlineMedium;
     final defaultDescriptionStyle = Theme.of(context).textTheme.bodyLarge;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -270,10 +270,7 @@ class InformationStepLayout extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  title!,
-                  style: titleStyle ?? defaultTitleStyle,
-                ),
+                child: Text(title!, style: titleStyle ?? defaultTitleStyle),
               ),
               if (actions != null) ...actions!,
             ],

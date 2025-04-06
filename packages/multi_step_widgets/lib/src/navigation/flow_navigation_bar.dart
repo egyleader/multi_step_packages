@@ -144,8 +144,7 @@ class FlowNavigationBar<TStepData> extends StatelessWidget {
       builder: (context, state) {
         final isLastStep = !state.hasNext;
         final currentStep = state.currentStep;
-        final canSkip =
-            shouldShowSkip?.call(state) ?? currentStep.isSkippable;
+        final canSkip = shouldShowSkip?.call(state) ?? currentStep.isSkippable;
         final canAdvance =
             state.validatedSteps.contains(currentStep.id) ||
             state.skippedSteps.contains(currentStep.id);
@@ -155,12 +154,16 @@ class FlowNavigationBar<TStepData> extends StatelessWidget {
             showNextButton
                 ? nextButtonBuilder?.call(
                       context,
-                      isLastStep ? () => flowBloc.completeFlow() : () => flowBloc.nextStep(),
+                      isLastStep
+                          ? () => flowBloc.completeFlow()
+                          : () => flowBloc.nextStep(),
                       canAdvance,
                     ) ??
                     NavigationButton(
                       onPressed:
-                          isLastStep ? () => flowBloc.completeFlow() : () => flowBloc.nextStep(),
+                          isLastStep
+                              ? () => flowBloc.completeFlow()
+                              : () => flowBloc.nextStep(),
                       style: isLastStep ? completeStyle : nextStyle,
                       enabled: canAdvance,
                       child: isLastStep ? completeLabel : nextLabel,
@@ -169,7 +172,10 @@ class FlowNavigationBar<TStepData> extends StatelessWidget {
 
         final prevBtn =
             (showPreviousButton && state.hasPrevious)
-                ? previousButtonBuilder?.call(context, () => flowBloc.previousStep()) ??
+                ? previousButtonBuilder?.call(
+                      context,
+                      () => flowBloc.previousStep(),
+                    ) ??
                     NavigationButton(
                       onPressed: () => flowBloc.previousStep(),
                       style: previousStyle,

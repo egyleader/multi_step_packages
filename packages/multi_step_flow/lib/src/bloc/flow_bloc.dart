@@ -12,7 +12,7 @@ import 'flow_events.dart';
 class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
   /// The steps in the flow
   late List<FlowStep<TStepData>> _steps;
-  
+
   /// The configuration for the flow
   FlowConfiguration _configuration;
 
@@ -23,14 +23,9 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
   FlowBloc({
     required List<FlowStep<TStepData>> steps,
     FlowConfiguration? configuration,
-  })  : _steps = steps,
-        _configuration = configuration ?? FlowConfiguration(),
-        super(
-          FlowState<TStepData>(
-            steps: steps,
-            status: FlowStatus.initial,
-          ),
-        ) {
+  }) : _steps = steps,
+       _configuration = configuration ?? FlowConfiguration(),
+       super(FlowState<TStepData>(steps: steps, status: FlowStatus.initial)) {
     // Set up event handlers
     on<FlowInitialized>(_onFlowInitialized);
     on<FlowNextPressed>(_onFlowNextPressed);
@@ -64,16 +59,20 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
   }
 
   Future<void> _onFlowInitialized(
-      FlowInitialized event, Emitter<FlowState<TStepData>> emit) async {
+    FlowInitialized event,
+    Emitter<FlowState<TStepData>> emit,
+  ) async {
     if (event.configuration != null) {
       _configuration = event.configuration!;
     }
 
     // Update the state with the new configuration
-    emit(FlowState<TStepData>(
-      steps: _steps,
-      status: _configuration.persistState ? state.status : FlowStatus.initial,
-    ));
+    emit(
+      FlowState<TStepData>(
+        steps: _steps,
+        status: _configuration.persistState ? state.status : FlowStatus.initial,
+      ),
+    );
 
     // Start timer for this step if it has a time limit
     _startStepTimer();
@@ -83,7 +82,9 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
   }
 
   Future<void> _onFlowNextPressed(
-      FlowNextPressed event, Emitter<FlowState<TStepData>> emit) async {
+    FlowNextPressed event,
+    Emitter<FlowState<TStepData>> emit,
+  ) async {
     // Cancel any existing timer
     _cancelStepTimer();
 
@@ -100,13 +101,13 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
     if (!state.hasNext) {
       // Call exit callback for current step
       await _executeCurrentStepCallback((step) => step.onExit());
-      
+
       // Emit the completed state
       emit(state.copyWith(status: FlowStatus.completed));
-      
+
       // Fire completion event
       add(const FlowCompleted());
-      
+
       return;
     }
 
@@ -115,10 +116,12 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
 
     // Move to the next step
     final nextStepIndex = state.currentStepIndex + 1;
-    emit(state.copyWith(
-      currentStepIndex: nextStepIndex,
-      status: FlowStatus.inProgress,
-    ));
+    emit(
+      state.copyWith(
+        currentStepIndex: nextStepIndex,
+        status: FlowStatus.inProgress,
+      ),
+    );
 
     // Call enter callback for the new step
     await _executeCurrentStepCallback((step) => step.onEnter());
@@ -128,7 +131,9 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
   }
 
   Future<void> _onFlowPreviousPressed(
-      FlowPreviousPressed event, Emitter<FlowState<TStepData>> emit) async {
+    FlowPreviousPressed event,
+    Emitter<FlowState<TStepData>> emit,
+  ) async {
     if (!state.hasPrevious) return;
 
     // Cancel any existing timer
@@ -139,10 +144,12 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
 
     // Move to previous step
     final prevStepIndex = state.currentStepIndex - 1;
-    emit(state.copyWith(
-      currentStepIndex: prevStepIndex,
-      status: FlowStatus.inProgress,
-    ));
+    emit(
+      state.copyWith(
+        currentStepIndex: prevStepIndex,
+        status: FlowStatus.inProgress,
+      ),
+    );
 
     // Call enter callback for the new step
     await _executeCurrentStepCallback((step) => step.onEnter());
@@ -152,7 +159,9 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
   }
 
   Future<void> _onFlowStepSkipped(
-      FlowStepSkipped event, Emitter<FlowState<TStepData>> emit) async {
+    FlowStepSkipped event,
+    Emitter<FlowState<TStepData>> emit,
+  ) async {
     if (!state.currentStep.isSkippable) return;
 
     // Cancel any existing timer
@@ -164,24 +173,31 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
     // If this is the last step, complete the flow
     if (!state.hasNext) {
       // Emit the completed state
-      emit(state.copyWith(
-        status: FlowStatus.completed,
-        skippedSteps: {...state.skippedSteps, state.currentStep.id},
-      ));
-      
+      emit(
+        state.copyWith(
+          status: FlowStatus.completed,
+          skippedSteps: {...state.skippedSteps, state.currentStep.id},
+        ),
+      );
+
       // Fire completion event
       add(const FlowCompleted());
-      
+
       return;
     }
 
     // Move to the next step
     final nextStepIndex = state.currentStepIndex + 1;
-    emit(state.copyWith(
-      currentStepIndex: nextStepIndex,
-      status: FlowStatus.inProgress,
-      skippedSteps: {...state.skippedSteps, state.steps[state.currentStepIndex].id},
-    ));
+    emit(
+      state.copyWith(
+        currentStepIndex: nextStepIndex,
+        status: FlowStatus.inProgress,
+        skippedSteps: {
+          ...state.skippedSteps,
+          state.steps[state.currentStepIndex].id,
+        },
+      ),
+    );
 
     // Call enter callback for the new step
     await _executeCurrentStepCallback((step) => step.onEnter());
@@ -191,18 +207,22 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
   }
 
   Future<void> _onFlowStepValidated(
-      FlowStepValidated event, Emitter<FlowState<TStepData>> emit) async {
+    FlowStepValidated event,
+    Emitter<FlowState<TStepData>> emit,
+  ) async {
     final isValid = event.isValid;
     final currentStepId = state.currentStep.id;
 
     if (isValid) {
       // Add to validated steps
       final validatedSteps = {...state.validatedSteps, currentStepId};
-      
-      emit(state.copyWith(
-        validatedSteps: validatedSteps,
-        status: FlowStatus.valid,
-      ));
+
+      emit(
+        state.copyWith(
+          validatedSteps: validatedSteps,
+          status: FlowStatus.valid,
+        ),
+      );
 
       // If auto advance is enabled, move to next step automatically
       if (_configuration.autoAdvanceOnValidation && state.hasNext) {
@@ -212,16 +232,20 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
       // Remove from validated steps if it exists
       final validatedSteps = {...state.validatedSteps};
       validatedSteps.remove(currentStepId);
-      
-      emit(state.copyWith(
-        validatedSteps: validatedSteps,
-        status: FlowStatus.invalid,
-      ));
+
+      emit(
+        state.copyWith(
+          validatedSteps: validatedSteps,
+          status: FlowStatus.invalid,
+        ),
+      );
     }
   }
 
   Future<void> _onFlowStepTimerCompleted(
-      FlowStepTimerCompleted event, Emitter<FlowState<TStepData>> emit) async {
+    FlowStepTimerCompleted event,
+    Emitter<FlowState<TStepData>> emit,
+  ) async {
     // Move to the next step automatically
     if (state.hasNext) {
       add(const FlowNextPressed());
@@ -232,15 +256,19 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
   }
 
   Future<void> _onFlowStepSelected(
-      FlowStepSelected event, Emitter<FlowState<TStepData>> emit) async {
+    FlowStepSelected event,
+    Emitter<FlowState<TStepData>> emit,
+  ) async {
     final selectedIndex = event.index;
 
     // Validate index is within bounds
     if (selectedIndex < 0 || selectedIndex >= _steps.length) {
-      emit(state.copyWith(
-        status: FlowStatus.error,
-        error: 'Invalid step index: $selectedIndex',
-      ));
+      emit(
+        state.copyWith(
+          status: FlowStatus.error,
+          error: 'Invalid step index: $selectedIndex',
+        ),
+      );
       return;
     }
 
@@ -254,10 +282,12 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
     await _executeCurrentStepCallback((step) => step.onExit());
 
     // Move to selected step
-    emit(state.copyWith(
-      currentStepIndex: selectedIndex,
-      status: FlowStatus.inProgress,
-    ));
+    emit(
+      state.copyWith(
+        currentStepIndex: selectedIndex,
+        status: FlowStatus.inProgress,
+      ),
+    );
 
     // Call enter callback for the new step
     await _executeCurrentStepCallback((step) => step.onEnter());
@@ -267,14 +297,16 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
   }
 
   Future<void> _onFlowErrorOccurred(
-      FlowErrorOccurred event, Emitter<FlowState<TStepData>> emit) async {
-    emit(state.copyWith(
-      status: FlowStatus.error,
-      error: event.message,
-    ));
+    FlowErrorOccurred event,
+    Emitter<FlowState<TStepData>> emit,
+  ) async {
+    emit(state.copyWith(status: FlowStatus.error, error: event.message));
   }
 
-  Future<void> _onFlowReset(FlowReset event, Emitter<FlowState<TStepData>> emit) async {
+  Future<void> _onFlowReset(
+    FlowReset event,
+    Emitter<FlowState<TStepData>> emit,
+  ) async {
     // Cancel any existing timer
     _cancelStepTimer();
 
@@ -282,10 +314,7 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
     await _executeCurrentStepCallback((step) => step.onExit());
 
     // Reset the flow state
-    emit(FlowState<TStepData>(
-      steps: _steps,
-      status: FlowStatus.initial,
-    ));
+    emit(FlowState<TStepData>(steps: _steps, status: FlowStatus.initial));
 
     // Call enter callback for the first step
     await _executeCurrentStepCallback((step) => step.onEnter());
@@ -295,54 +324,60 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
   }
 
   Future<void> _onFlowCompleted(
-      FlowCompleted event, Emitter<FlowState<TStepData>> emit) async {
+    FlowCompleted event,
+    Emitter<FlowState<TStepData>> emit,
+  ) async {
     // Flow has been completed
     emit(state.copyWith(status: FlowStatus.completed));
   }
 
   Future<void> _onFlowLoading(
-      FlowLoading event, Emitter<FlowState<TStepData>> emit) async {
-    emit(state.copyWith(
-      status: FlowStatus.loading,
-    ));
+    FlowLoading event,
+    Emitter<FlowState<TStepData>> emit,
+  ) async {
+    emit(state.copyWith(status: FlowStatus.loading));
   }
 
   Future<void> _onFlowStepsModified(
-      FlowStepsModified event, Emitter<FlowState<TStepData>> emit) async {
-    final newSteps = event.steps.map((step) => step as FlowStep<TStepData>).toList();
+    FlowStepsModified event,
+    Emitter<FlowState<TStepData>> emit,
+  ) async {
+    final newSteps =
+        event.steps.map((step) => step as FlowStep<TStepData>).toList();
     _steps = newSteps;
-    
+
     // If current step index is out of bounds, reset to the first step
-    final currentStepIndex = state.currentStepIndex < newSteps.length
-        ? state.currentStepIndex
-        : 0;
-    
-    emit(FlowState<TStepData>(
-      steps: _steps,
-      currentStepIndex: currentStepIndex,
-      status: FlowStatus.inProgress,
-      validatedSteps: state.validatedSteps,
-      skippedSteps: state.skippedSteps,
-    ));
-    
+    final currentStepIndex =
+        state.currentStepIndex < newSteps.length ? state.currentStepIndex : 0;
+
+    emit(
+      FlowState<TStepData>(
+        steps: _steps,
+        currentStepIndex: currentStepIndex,
+        status: FlowStatus.inProgress,
+        validatedSteps: state.validatedSteps,
+        skippedSteps: state.skippedSteps,
+      ),
+    );
+
     // Start timer for this step if it has a time limit
     _startStepTimer();
   }
 
   Future<void> _onFlowStepDataUpdated(
-      FlowStepDataUpdated event, Emitter<FlowState<TStepData>> emit) async {
+    FlowStepDataUpdated event,
+    Emitter<FlowState<TStepData>> emit,
+  ) async {
     // Update the data for the current step
     final stepData = event.data as TStepData;
     final currentStepIndex = state.currentStepIndex;
-    
+
     final updatedStep = _steps[currentStepIndex].copyWith(data: stepData);
     final updatedSteps = List<FlowStep<TStepData>>.from(_steps);
     updatedSteps[currentStepIndex] = updatedStep;
     _steps = updatedSteps;
-    
-    emit(state.copyWith(
-      steps: _steps,
-    ));
+
+    emit(state.copyWith(steps: _steps));
   }
 
   // Start a timer for the current step if it has a time limit
@@ -393,8 +428,7 @@ class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
   void skipStep() => add(const FlowStepSkipped());
 
   /// Validates the current step
-  void validateStep(bool isValid) =>
-      add(FlowStepValidated(isValid: isValid));
+  void validateStep(bool isValid) => add(FlowStepValidated(isValid: isValid));
 
   /// Resets the flow to the start
   void resetFlow() => add(const FlowReset());

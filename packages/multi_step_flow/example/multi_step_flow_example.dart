@@ -48,7 +48,7 @@ void main() {
       autoAdvanceOnValidation: true,
     ),
   );
-  
+
   // Ensure the first step is validated so navigation works
   bloc.validateStep(true);
 
@@ -98,7 +98,7 @@ class RegistrationData {
   final StepType type;
   final Map<String, dynamic> fields;
   final bool isValid;
-  
+
   const RegistrationData({
     required this.type,
     required this.fields,
@@ -113,7 +113,7 @@ class RegistrationData {
     }
     return null;
   }
-  
+
   // Create a copy with updated fields
   RegistrationData copyWith({
     StepType? type,

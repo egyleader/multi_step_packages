@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:multi_step_flow/multi_step_flow.dart';
 import 'package:multi_step_widgets/multi_step_widgets.dart';
 
 void main() {
@@ -8,23 +7,20 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Multi-Step Flow Example',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const OnboardingFlow(),
     );
   }
 }
 
 class OnboardingFlow extends StatefulWidget {
-  const OnboardingFlow({Key? key}) : super(key: key);
+  const OnboardingFlow({super.key});
 
   @override
   State<OnboardingFlow> createState() => _OnboardingFlowState();
@@ -60,7 +56,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         data: OnboardingData(),
       ),
     ];
-    
+
     // Initialize bloc with the steps
     _bloc = FlowBloc<OnboardingData>(steps: steps);
   }
@@ -94,7 +90,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
               },
             ),
           ),
-          
+
           // Main content
           Expanded(
             child: FlowBuilder<OnboardingData>(
@@ -102,7 +98,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
               stepBuilder: _buildStep,
             ),
           ),
-          
+
           // Navigation bar
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -142,14 +138,14 @@ class OnboardingData {
   final String? email;
   final List<String> interests;
   final bool notifications;
-  
+
   OnboardingData({
     this.name,
     this.email,
     this.interests = const [],
     this.notifications = false,
   });
-  
+
   OnboardingData copyWith({
     String? name,
     String? email,
@@ -167,7 +163,7 @@ class OnboardingData {
 
 // Welcome step
 class WelcomeStep extends StatelessWidget {
-  const WelcomeStep({Key? key}) : super(key: key);
+  const WelcomeStep({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +195,7 @@ class WelcomeStep extends StatelessWidget {
 
 // Profile step
 class ProfileStep extends StatefulWidget {
-  const ProfileStep({Key? key}) : super(key: key);
+  const ProfileStep({super.key});
 
   @override
   State<ProfileStep> createState() => _ProfileStepState();
@@ -207,17 +203,17 @@ class ProfileStep extends StatefulWidget {
 
 class _ProfileStepState extends State<ProfileStep> {
   late FormStepData _formData;
-  
+
   @override
   void initState() {
     super.initState();
     _formData = FormStepData();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<FlowBloc<OnboardingData>>(context);
-    
+
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: FormStepLayout(
@@ -268,21 +264,21 @@ class _ProfileStepState extends State<ProfileStep> {
       ),
     );
   }
-  
+
   void _updateFormData(FormStepData updatedFormData) {
     setState(() {
       _formData = updatedFormData;
     });
-    
+
     // Update flow data
     final bloc = BlocProvider.of<FlowBloc<OnboardingData>>(context);
     final currentData = bloc.state.currentStep.data;
-    
+
     final updatedData = currentData.copyWith(
       name: _formData.getField<String>('name'),
       email: _formData.getField<String>('email'),
     );
-    
+
     bloc.updateStepData(updatedData);
     bloc.add(FlowEvent.stepValidated(isValid: _formData.isFormValid));
   }
@@ -290,7 +286,7 @@ class _ProfileStepState extends State<ProfileStep> {
 
 // Preferences step
 class PreferencesStep extends StatefulWidget {
-  const PreferencesStep({Key? key}) : super(key: key);
+  const PreferencesStep({super.key});
 
   @override
   State<PreferencesStep> createState() => _PreferencesStepState();
@@ -298,22 +294,28 @@ class PreferencesStep extends StatefulWidget {
 
 class _PreferencesStepState extends State<PreferencesStep> {
   final List<String> _availableInterests = [
-    'Technology', 'Sports', 'Music', 'Travel', 'Food', 'Art', 'Science'
+    'Technology',
+    'Sports',
+    'Music',
+    'Travel',
+    'Food',
+    'Art',
+    'Science',
   ];
-  
+
   late List<String> _selectedInterests;
   late bool _enableNotifications;
-  
+
   @override
   void initState() {
     super.initState();
     final bloc = BlocProvider.of<FlowBloc<OnboardingData>>(context);
     final data = bloc.state.currentStep.data;
-    
+
     _selectedInterests = List.from(data.interests);
     _enableNotifications = data.notifications;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -334,28 +336,31 @@ class _PreferencesStepState extends State<PreferencesStep> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: _availableInterests.map((interest) {
-              final isSelected = _selectedInterests.contains(interest);
-              return FilterChip(
-                label: Text(interest),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    if (selected) {
-                      _selectedInterests.add(interest);
-                    } else {
-                      _selectedInterests.remove(interest);
-                    }
-                  });
-                  _updateData();
-                },
-              );
-            }).toList(),
+            children:
+                _availableInterests.map((interest) {
+                  final isSelected = _selectedInterests.contains(interest);
+                  return FilterChip(
+                    label: Text(interest),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() {
+                        if (selected) {
+                          _selectedInterests.add(interest);
+                        } else {
+                          _selectedInterests.remove(interest);
+                        }
+                      });
+                      _updateData();
+                    },
+                  );
+                }).toList(),
           ),
           const SizedBox(height: 24),
           SwitchListTile(
             title: const Text('Enable notifications'),
-            subtitle: const Text('We\'ll keep you updated with relevant information'),
+            subtitle: const Text(
+              'We\'ll keep you updated with relevant information',
+            ),
             value: _enableNotifications,
             onChanged: (value) {
               setState(() {
@@ -368,18 +373,18 @@ class _PreferencesStepState extends State<PreferencesStep> {
       ),
     );
   }
-  
+
   void _updateData() {
     final bloc = BlocProvider.of<FlowBloc<OnboardingData>>(context);
     final currentData = bloc.state.currentStep.data;
-    
+
     final updatedData = currentData.copyWith(
       interests: _selectedInterests,
       notifications: _enableNotifications,
     );
-    
+
     bloc.updateStepData(updatedData);
-    
+
     // Preferences step is always valid
     bloc.add(const FlowEvent.stepValidated(isValid: true));
   }
@@ -387,20 +392,24 @@ class _PreferencesStepState extends State<PreferencesStep> {
 
 // Complete step
 class CompleteStep extends StatelessWidget {
-  const CompleteStep({Key? key}) : super(key: key);
+  const CompleteStep({super.key});
 
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<FlowBloc<OnboardingData>>(context);
     final data = bloc.state.currentStep.data;
-    
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.check_circle_outline, size: 72, color: Colors.green),
+            const Icon(
+              Icons.check_circle_outline,
+              size: 72,
+              color: Colors.green,
+            ),
             const SizedBox(height: 24),
             Text(
               'All Set, ${data.name ?? "User"}!',

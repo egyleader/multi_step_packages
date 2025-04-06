@@ -10,19 +10,13 @@ void main() {
 
     setUp(() {
       steps = [
+        FlowStep<TestData>(id: '1', data: const TestData(value: 'test1')),
         FlowStep<TestData>(
-          id: '1', 
-          data: const TestData(value: 'test1'),
-        ),
-        FlowStep<TestData>(
-          id: '2', 
-          isSkippable: true, 
+          id: '2',
+          isSkippable: true,
           data: const TestData(value: 'test2'),
         ),
-        FlowStep<TestData>(
-          id: '3', 
-          data: const TestData(value: 'test3'),
-        ),
+        FlowStep<TestData>(id: '3', data: const TestData(value: 'test3')),
       ];
       bloc = FlowBloc<TestData>(steps: steps);
     });
@@ -83,7 +77,7 @@ void main() {
       // First move to next step and validate it
       bloc.nextStep();
       bloc.validateStep(true);
-      
+
       // Then reset
       bloc.resetFlow();
 
@@ -126,23 +120,23 @@ void main() {
       // Clean up
       await subscription.cancel();
     });
-    
+
     test('navigation methods change current step index', () async {
       // Initially at index 0
       expect(bloc.state.currentStepIndex, 0);
-      
+
       // Move to step 1
       bloc.nextStep();
       expect(bloc.state.currentStepIndex, 1);
-      
+
       // Move back to step 0
       bloc.previousStep();
       expect(bloc.state.currentStepIndex, 0);
-      
+
       // Skip to step 1 (which is skippable)
       bloc.goToStep(1); // Using index 1 for the second step
       bloc.skipStep();
-      
+
       // Should now be at step 2 (index 2)
       expect(bloc.state.currentStepIndex, 2);
       expect(bloc.state.skippedSteps.contains('2'), true);
@@ -166,11 +160,9 @@ void main() {
         id: 'test',
         data: const TestData(value: 'original'),
       );
-      
-      final updated = original.copyWith(
-        data: const TestData(value: 'updated'),
-      );
-      
+
+      final updated = original.copyWith(data: const TestData(value: 'updated'));
+
       expect(updated.id, original.id); // Same id
       expect(updated.data.value, 'updated'); // Updated value
     });
@@ -183,13 +175,13 @@ void main() {
         isSkippable: false,
         data: const TestData(value: 'original'),
       );
-      
+
       final updated = original.copyWith(
         title: 'New Title',
         description: 'New Description',
         isSkippable: true,
       );
-      
+
       expect(updated.id, original.id); // ID remains the same
       expect(updated.title, 'New Title');
       expect(updated.description, 'New Description');
@@ -204,18 +196,10 @@ class TestData {
   final String value;
   final int? number;
   final bool flag;
-  
-  const TestData({
-    required this.value,
-    this.number,
-    this.flag = false,
-  });
-  
-  TestData copyWith({
-    String? value,
-    int? number,
-    bool? flag,
-  }) {
+
+  const TestData({required this.value, this.number, this.flag = false});
+
+  TestData copyWith({String? value, int? number, bool? flag}) {
     return TestData(
       value: value ?? this.value,
       number: number ?? this.number,

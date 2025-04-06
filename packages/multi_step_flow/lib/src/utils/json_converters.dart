@@ -2,7 +2,8 @@ import 'package:json_annotation/json_annotation.dart';
 import '../models/flow_step.dart';
 
 /// A JsonConverter for FlowStep that handles generic data
-class FlowStepConverter<T> implements JsonConverter<FlowStep<T>, Map<String, dynamic>> {
+class FlowStepConverter<T>
+    implements JsonConverter<FlowStep<T>, Map<String, dynamic>> {
   const FlowStepConverter(this.fromJsonT, this.toJsonT);
 
   final T Function(Object? json) fromJsonT;
@@ -14,13 +15,14 @@ class FlowStepConverter<T> implements JsonConverter<FlowStep<T>, Map<String, dyn
     final title = json['title'] as String?;
     final description = json['description'] as String?;
     final isSkippable = json['isSkippable'] as bool? ?? false;
-    final timeLimit = json['timeLimit'] == null
-        ? null
-        : Duration(milliseconds: json['timeLimit'] as int);
-    
+    final timeLimit =
+        json['timeLimit'] == null
+            ? null
+            : Duration(milliseconds: json['timeLimit'] as int);
+
     final rawData = json['data'];
     final T data = fromJsonT(rawData);
-    
+
     return FlowStep<T>(
       id: id,
       title: title,
@@ -45,7 +47,8 @@ class FlowStepConverter<T> implements JsonConverter<FlowStep<T>, Map<String, dyn
 }
 
 /// A JsonConverter for List<FlowStep> that handles generic data
-class FlowStepsConverter<T> implements JsonConverter<List<FlowStep<T>>, List<dynamic>> {
+class FlowStepsConverter<T>
+    implements JsonConverter<List<FlowStep<T>>, List<dynamic>> {
   const FlowStepsConverter(this.fromJsonT, this.toJsonT);
 
   final T Function(Object? json) fromJsonT;
@@ -54,7 +57,12 @@ class FlowStepsConverter<T> implements JsonConverter<List<FlowStep<T>>, List<dyn
   @override
   List<FlowStep<T>> fromJson(List<dynamic> json) {
     return json
-        .map((e) => FlowStepConverter<T>(fromJsonT, toJsonT).fromJson(e as Map<String, dynamic>))
+        .map(
+          (e) => FlowStepConverter<T>(
+            fromJsonT,
+            toJsonT,
+          ).fromJson(e as Map<String, dynamic>),
+        )
         .toList();
   }
 

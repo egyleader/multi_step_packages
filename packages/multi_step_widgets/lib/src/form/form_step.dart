@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:multi_step_flow/multi_step_flow.dart';
 
 /// A specialized step widget for forms that manages form validation and submission
@@ -16,7 +15,8 @@ class FormStepBuilder<TStepData> extends StatefulWidget {
     FormStepData formData,
     void Function(FormStepData) onChanged,
     GlobalKey<FormState> formKey,
-  ) builder;
+  )
+  builder;
 
   /// Function to extract FormStepData from the step data
   final FormStepData Function(TStepData?) formDataExtractor;
@@ -38,7 +38,7 @@ class FormStepBuilder<TStepData> extends StatefulWidget {
 
   /// Constructor for [FormStepBuilder]
   const FormStepBuilder({
-    Key? key,
+    super.key,
     required this.bloc,
     required this.step,
     required this.builder,
@@ -48,13 +48,15 @@ class FormStepBuilder<TStepData> extends StatefulWidget {
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
     this.padding = const EdgeInsets.all(16.0),
     this.scrollPhysics,
-  }) : super(key: key);
+  });
 
   @override
-  _FormStepBuilderState<TStepData> createState() => _FormStepBuilderState<TStepData>();
+  _FormStepBuilderState<TStepData> createState() =>
+      _FormStepBuilderState<TStepData>();
 }
 
-class _FormStepBuilderState<TStepData> extends State<FormStepBuilder<TStepData>> {
+class _FormStepBuilderState<TStepData>
+    extends State<FormStepBuilder<TStepData>> {
   late FormStepData _formData;
   final _formKey = GlobalKey<FormState>();
 
@@ -76,11 +78,14 @@ class _FormStepBuilderState<TStepData> extends State<FormStepBuilder<TStepData>>
     setState(() {
       _formData = updatedFormData;
     });
-    
+
     // Update the step data in the bloc
-    final updatedStepData = widget.formDataUpdater(widget.step.data, updatedFormData);
+    final updatedStepData = widget.formDataUpdater(
+      widget.step.data,
+      updatedFormData,
+    );
     widget.bloc.add(FlowEvent.stepDataUpdated(data: updatedStepData));
-    
+
     // Validate the step if needed
     if (updatedFormData.isFormValid) {
       // Mark the step as valid
@@ -100,8 +105,8 @@ class _FormStepBuilderState<TStepData> extends State<FormStepBuilder<TStepData>>
         physics: widget.scrollPhysics,
         padding: widget.padding,
         child: widget.builder(
-          context, 
-          _formData, 
+          context,
+          _formData,
           _handleFormDataChanged,
           _formKey,
         ),
@@ -114,28 +119,28 @@ class _FormStepBuilderState<TStepData> extends State<FormStepBuilder<TStepData>>
 class FormStepLayout extends StatelessWidget {
   /// The step title
   final String? title;
-  
+
   /// The step description
   final String? description;
-  
+
   /// The form content
   final Widget child;
-  
+
   /// Text style for the title
   final TextStyle? titleStyle;
-  
+
   /// Text style for the description
   final TextStyle? descriptionStyle;
-  
+
   /// Additional actions to show in the header
   final List<Widget>? actions;
 
   /// Spacing between elements
   final double spacing;
-  
+
   /// Constructor for [FormStepLayout]
   const FormStepLayout({
-    Key? key,
+    super.key,
     this.title,
     this.description,
     required this.child,
@@ -143,13 +148,13 @@ class FormStepLayout extends StatelessWidget {
     this.descriptionStyle,
     this.actions,
     this.spacing = 24.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     final defaultTitleStyle = Theme.of(context).textTheme.headlineMedium;
     final defaultDescriptionStyle = Theme.of(context).textTheme.bodyLarge;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -157,10 +162,7 @@ class FormStepLayout extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  title!,
-                  style: titleStyle ?? defaultTitleStyle,
-                ),
+                child: Text(title!, style: titleStyle ?? defaultTitleStyle),
               ),
               if (actions != null) ...actions!,
             ],

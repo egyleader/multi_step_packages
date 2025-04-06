@@ -1,28 +1,26 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 /// A step in a multi-step flow
 class FlowStep<TStepData> {
   /// Unique identifier for the step
   final String id;
-  
+
   /// Optional title for the step
   final String? title;
-  
+
   /// Optional description for the step
   final String? description;
-  
+
   /// Whether the step can be skipped
   final bool isSkippable;
-  
+
   /// Optional time limit for the step (null means no limit)
   final Duration? timeLimit;
-  
+
   /// Step data
   final TStepData data;
-  
+
   /// Step metadata for custom properties
   final Map<String, dynamic> metadata;
-  
+
   /// Creates a new flow step with the given properties
   const FlowStep({
     required this.id,
@@ -33,16 +31,16 @@ class FlowStep<TStepData> {
     required this.data,
     this.metadata = const {},
   });
-  
+
   /// Called when entering this step
   Future<void> onEnter() async {}
-  
+
   /// Called when exiting this step
   Future<void> onExit() async {}
-  
+
   /// Called when skipping this step
   Future<void> onSkip() async {}
-  
+
   /// Validates the step data
   Future<bool> validate() async => true;
 
@@ -72,15 +70,15 @@ class FlowStep<TStepData> {
     if (!metadata.containsKey(key)) {
       return defaultValue;
     }
-    
+
     final value = metadata[key];
     if (value is T) {
       return value;
     }
-    
+
     return defaultValue;
   }
-  
+
   /// Create a map representation of this step
   Map<String, dynamic> toJson() {
     return {
@@ -93,7 +91,7 @@ class FlowStep<TStepData> {
       'metadata': metadata,
     };
   }
-  
+
   /// Create a FlowStep from a map representation
   static FlowStep<TStepData> fromJson<TStepData>(
     Map<String, dynamic> json,
@@ -104,14 +102,15 @@ class FlowStep<TStepData> {
       title: json['title'] as String?,
       description: json['description'] as String?,
       isSkippable: json['isSkippable'] as bool? ?? false,
-      timeLimit: json['timeLimit'] != null
-          ? Duration(milliseconds: json['timeLimit'] as int)
-          : null,
+      timeLimit:
+          json['timeLimit'] != null
+              ? Duration(milliseconds: json['timeLimit'] as int)
+              : null,
       data: dataConverter(json['data']),
       metadata: (json['metadata'] as Map<String, dynamic>?) ?? {},
     );
   }
-  
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -126,13 +125,6 @@ class FlowStep<TStepData> {
 
   @override
   int get hashCode {
-    return Object.hash(
-      id,
-      title,
-      description,
-      isSkippable,
-      timeLimit,
-      data,
-    );
+    return Object.hash(id, title, description, isSkippable, timeLimit, data);
   }
 }

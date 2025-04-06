@@ -9,28 +9,28 @@ import 'package:multi_step_flow/multi_step_flow.dart';
 class FlowBuilder<TStepData> extends StatefulWidget {
   /// The FlowBloc that manages this flow's state
   final FlowBloc<TStepData>? bloc;
-  
+
   /// Builder function for rendering the current step
   final Widget Function(BuildContext, FlowStep<TStepData>) stepBuilder;
-  
+
   /// Optional builder for loading state
   final Widget Function(BuildContext, FlowState<TStepData>)? loadingBuilder;
-  
+
   /// Optional builder for error state
   final Widget Function(BuildContext, String?)? errorBuilder;
-  
+
   /// Optional builder for completed state
   final Widget Function(BuildContext, FlowState<TStepData>)? completedBuilder;
-  
+
   /// Duration for step transitions
   final Duration transitionDuration;
-  
+
   /// Curve for step transitions
   final Curve transitionCurve;
-  
+
   /// Whether to animate transitions between steps
   final bool animateTransitions;
-  
+
   /// Callback fired when the flow completes
   final VoidCallback? onFlowCompleted;
 
@@ -42,7 +42,7 @@ class FlowBuilder<TStepData> extends StatefulWidget {
   /// If [bloc] is not provided, it will try to find a [FlowBloc] in the widget tree
   /// using [BlocProvider]. At least one of these must be available.
   const FlowBuilder({
-    Key? key,
+    super.key,
     this.bloc,
     required this.stepBuilder,
     this.loadingBuilder,
@@ -53,7 +53,7 @@ class FlowBuilder<TStepData> extends StatefulWidget {
     this.animateTransitions = true,
     this.onFlowCompleted,
     this.transitionBuilder,
-  }) : super(key: key);
+  });
 
   @override
   _FlowBuilderState<TStepData> createState() => _FlowBuilderState<TStepData>();
@@ -85,19 +85,23 @@ class _FlowBuilderState<TStepData> extends State<FlowBuilder<TStepData>> {
 
   void _updateBloc() {
     _bloc = widget.bloc ?? context.read<FlowBloc<TStepData>>();
-    assert(_bloc != null, 'FlowBloc not found. Provide a bloc or use BlocProvider.');
+    assert(
+      _bloc != null,
+      'FlowBloc not found. Provide a bloc or use BlocProvider.',
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<FlowBloc<TStepData>, FlowState<TStepData>>(
       bloc: _bloc,
-      listenWhen: (previous, current) => 
-          previous.status != current.status && 
-          current.status == FlowStatus.completed,
+      listenWhen:
+          (previous, current) =>
+              previous.status != current.status &&
+              current.status == FlowStatus.completed,
       listener: (context, state) {
-        if (state.status == FlowStatus.completed && 
-            !_hasCalledOnCompleted && 
+        if (state.status == FlowStatus.completed &&
+            !_hasCalledOnCompleted &&
             widget.onFlowCompleted != null) {
           _hasCalledOnCompleted = true;
           widget.onFlowCompleted!();
@@ -115,25 +119,27 @@ class _FlowBuilderState<TStepData> extends State<FlowBuilder<TStepData>> {
           case FlowStatus.skipped:
             // Main step rendering with animation
             return AnimatedSwitcher(
-              duration: widget.animateTransitions 
-                  ? widget.transitionDuration 
-                  : Duration.zero,
+              duration:
+                  widget.animateTransitions
+                      ? widget.transitionDuration
+                      : Duration.zero,
               switchInCurve: widget.transitionCurve,
               switchOutCurve: widget.transitionCurve,
-              transitionBuilder: widget.transitionBuilder ?? defaultTransitionBuilder,
+              transitionBuilder:
+                  widget.transitionBuilder ?? defaultTransitionBuilder,
               child: KeyedSubtree(
                 key: ValueKey('step_${state.currentStepIndex}'),
                 child: widget.stepBuilder(context, state.currentStep),
               ),
             );
-          
+
           case FlowStatus.error:
             // Error state
             if (widget.errorBuilder != null) {
               return widget.errorBuilder!(context, state.error);
             }
             return _defaultErrorBuilder(context, state.error);
-            
+
           case FlowStatus.completed:
             // Completed state
             if (widget.completedBuilder != null) {
@@ -149,7 +155,7 @@ class _FlowBuilderState<TStepData> extends State<FlowBuilder<TStepData>> {
   Widget defaultTransitionBuilder(Widget child, Animation<double> animation) {
     return FadeTransition(opacity: animation, child: child);
   }
-  
+
   // Default error UI
   Widget _defaultErrorBuilder(BuildContext context, String? error) {
     return Center(
@@ -187,9 +193,12 @@ class _FlowBuilderState<TStepData> extends State<FlowBuilder<TStepData>> {
       ),
     );
   }
-  
+
   // Default completion UI
-  Widget _defaultCompletedBuilder(BuildContext context, FlowState<TStepData> state) {
+  Widget _defaultCompletedBuilder(
+    BuildContext context,
+    FlowState<TStepData> state,
+  ) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -225,26 +234,23 @@ class _FlowBuilderState<TStepData> extends State<FlowBuilder<TStepData>> {
 class FlowBlocProvider<TStepData> extends StatelessWidget {
   /// The child widget
   final Widget child;
-  
+
   /// The FlowBloc to provide
   final FlowBloc<TStepData> bloc;
-  
+
   /// Whether to dispose the bloc when this widget is removed
   final bool disposeBloc;
 
   /// Creates a new [FlowBlocProvider] widget.
   const FlowBlocProvider({
-    Key? key,
+    super.key,
     required this.child,
     required this.bloc,
     this.disposeBloc = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<FlowBloc<TStepData>>.value(
-      value: bloc,
-      child: child,
-    );
+    return BlocProvider<FlowBloc<TStepData>>.value(value: bloc, child: child);
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:multi_step_flow/multi_step_flow.dart';
 import 'package:multi_step_widgets/multi_step_widgets.dart';
 
 void main() {
@@ -8,23 +7,20 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Registration Flow Example',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const RegistrationScreen(),
     );
   }
 }
 
 class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({Key? key}) : super(key: key);
+  const RegistrationScreen({super.key});
 
   @override
   State<RegistrationScreen> createState() => _RegistrationScreenState();
@@ -44,18 +40,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         title: 'Personal Information',
         // Make the first step skippable so Next is enabled
         isSkippable: true,
-        data: RegistrationData(
-          firstName: '',
-          lastName: '',
-        ),
+        data: RegistrationData(firstName: '', lastName: ''),
       ),
       FlowStep<RegistrationData>(
         id: 'account',
         title: 'Account Details',
-        data: RegistrationData(
-          email: '',
-          password: '',
-        ),
+        data: RegistrationData(email: '', password: ''),
       ),
       FlowStep<RegistrationData>(
         id: 'preferences',
@@ -70,7 +60,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     // Initialize the bloc
     _bloc = FlowBloc<RegistrationData>(steps: steps);
-    
+
     // Make sure the first step is valid so the Next button is enabled
     _bloc.validateStep(true);
   }
@@ -85,7 +75,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: BlocBuilder<FlowBloc<RegistrationData>, FlowState<RegistrationData>>(
+        title: BlocBuilder<
+          FlowBloc<RegistrationData>,
+          FlowState<RegistrationData>
+        >(
           bloc: _bloc,
           builder: (context, state) {
             return Text(state.currentStep.title ?? 'Registration');
@@ -94,7 +87,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       ),
       body: FlowBlocProvider<RegistrationData>(
         bloc: _bloc,
-        child: BlocBuilder<FlowBloc<RegistrationData>, FlowState<RegistrationData>>(
+        child: BlocBuilder<
+          FlowBloc<RegistrationData>,
+          FlowState<RegistrationData>
+        >(
           bloc: _bloc,
           builder: (context, state) {
             return Column(
@@ -102,16 +98,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 // Step indicator
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: DotsIndicator<RegistrationData>(
-                    bloc: _bloc,
-                  ),
+                  child: DotsIndicator<RegistrationData>(bloc: _bloc),
                 ),
-                
+
                 // Main content
-                Expanded(
-                  child: _buildStep(context, state.currentStep),
-                ),
-                
+                Expanded(child: _buildStep(context, state.currentStep)),
+
                 // Navigation bar
                 Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -130,7 +122,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       ),
     );
   }
-  
+
   Widget _buildStep(BuildContext context, FlowStep<RegistrationData> step) {
     switch (step.id) {
       case 'personal':
@@ -153,7 +145,7 @@ class RegistrationData {
   final String? password;
   final bool receiveNewsletter;
   final String? preferredTheme;
-  
+
   const RegistrationData({
     this.firstName,
     this.lastName,
@@ -162,7 +154,7 @@ class RegistrationData {
     this.receiveNewsletter = false,
     this.preferredTheme,
   });
-  
+
   RegistrationData copyWith({
     String? firstName,
     String? lastName,
@@ -184,8 +176,8 @@ class RegistrationData {
 
 // Personal Information Form
 class PersonalInfoForm extends StatefulWidget {
-  const PersonalInfoForm({Key? key}) : super(key: key);
-  
+  const PersonalInfoForm({super.key});
+
   @override
   State<PersonalInfoForm> createState() => _PersonalInfoFormState();
 }
@@ -200,12 +192,15 @@ class _PersonalInfoFormState extends State<PersonalInfoForm> {
   void initState() {
     super.initState();
     // Initialize from current step data if available
-    final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context, listen: false);
+    final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(
+      context,
+      listen: false,
+    );
     final currentData = bloc.state.currentStep.data;
     _firstName = currentData.firstName ?? '';
     _lastName = currentData.lastName ?? '';
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -275,35 +270,35 @@ class _PersonalInfoFormState extends State<PersonalInfoForm> {
       ),
     );
   }
-  
+
   void _validateForm() {
     final isValid = _formKey.currentState?.validate() ?? false;
     setState(() {
       _isValid = isValid;
     });
-    
+
     // Update validation status in the bloc
     final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context);
     bloc.validateStep(_isValid);
   }
-  
+
   void _updateData() {
     final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context);
     final currentData = bloc.state.currentStep.data;
-    
+
     final updatedData = currentData.copyWith(
       firstName: _firstName,
       lastName: _lastName,
     );
-    
+
     bloc.updateStepData(updatedData);
   }
 }
 
 // Account Details Form
 class AccountDetailsForm extends StatefulWidget {
-  const AccountDetailsForm({Key? key}) : super(key: key);
-  
+  const AccountDetailsForm({super.key});
+
   @override
   State<AccountDetailsForm> createState() => _AccountDetailsFormState();
 }
@@ -314,17 +309,20 @@ class _AccountDetailsFormState extends State<AccountDetailsForm> {
   String _password = '';
   bool _obscurePassword = true;
   bool _isValid = false;
-  
+
   @override
   void initState() {
     super.initState();
     // Initialize from current step data if available
-    final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context, listen: false);
+    final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(
+      context,
+      listen: false,
+    );
     final currentData = bloc.state.currentStep.data;
     _email = currentData.email ?? '';
     _password = currentData.password ?? '';
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -382,7 +380,9 @@ class _AccountDetailsFormState extends State<AccountDetailsForm> {
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -414,35 +414,35 @@ class _AccountDetailsFormState extends State<AccountDetailsForm> {
       ),
     );
   }
-  
+
   void _validateForm() {
     final isValid = _formKey.currentState?.validate() ?? false;
     setState(() {
       _isValid = isValid;
     });
-    
+
     // Update validation status in the bloc
     final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context);
     bloc.validateStep(_isValid);
   }
-  
+
   void _updateData() {
     final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context);
     final currentData = bloc.state.currentStep.data;
-    
+
     final updatedData = currentData.copyWith(
       email: _email,
       password: _password,
     );
-    
+
     bloc.updateStepData(updatedData);
   }
 }
 
 // Preferences Form
 class PreferencesForm extends StatefulWidget {
-  const PreferencesForm({Key? key}) : super(key: key);
-  
+  const PreferencesForm({super.key});
+
   @override
   State<PreferencesForm> createState() => _PreferencesFormState();
 }
@@ -450,26 +450,30 @@ class PreferencesForm extends StatefulWidget {
 class _PreferencesFormState extends State<PreferencesForm> {
   bool _receiveNewsletter = false;
   String _selectedTheme = 'system';
-  
+
   final List<Map<String, dynamic>> _themes = [
     {'value': 'light', 'label': 'Light Theme', 'icon': Icons.light_mode},
     {'value': 'dark', 'label': 'Dark Theme', 'icon': Icons.dark_mode},
-    {'value': 'system', 'label': 'System Default', 'icon': Icons.brightness_auto},
+    {
+      'value': 'system',
+      'label': 'System Default',
+      'icon': Icons.brightness_auto,
+    },
   ];
-  
+
   @override
   void initState() {
     super.initState();
     final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context);
     final currentData = bloc.state.currentStep.data;
-    
+
     _receiveNewsletter = currentData.receiveNewsletter;
     _selectedTheme = currentData.preferredTheme ?? 'system';
-    
+
     // Preferences step is always valid
     bloc.validateStep(true);
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -487,12 +491,9 @@ class _PreferencesFormState extends State<PreferencesForm> {
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: 24),
-          
+
           // Theme selection
-          Text(
-            'Theme',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+          Text('Theme', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 16),
           ...List.generate(_themes.length, (index) {
             final theme = _themes[index];
@@ -512,7 +513,7 @@ class _PreferencesFormState extends State<PreferencesForm> {
             );
           }),
           const SizedBox(height: 16),
-          
+
           // Newsletter option
           SwitchListTile(
             title: const Text('Receive Newsletter'),
@@ -529,16 +530,16 @@ class _PreferencesFormState extends State<PreferencesForm> {
       ),
     );
   }
-  
+
   void _updateData() {
     final bloc = BlocProvider.of<FlowBloc<RegistrationData>>(context);
     final currentData = bloc.state.currentStep.data;
-    
+
     final updatedData = currentData.copyWith(
       receiveNewsletter: _receiveNewsletter,
       preferredTheme: _selectedTheme,
     );
-    
+
     bloc.updateStepData(updatedData);
   }
 }
