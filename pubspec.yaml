@@ -1,11 +1,22 @@
-name: _
+name: multi_step
 publish_to: none
-workspace:
- - packages/multi_step_widgets
- - packages/multi_step_flow
 
 environment:
   sdk: ^3.7.0
 
+workspace:
+ - packages/multi_step_widgets
+ - packages/multi_step_flow
+
 dev_dependencies:
-  melos: ^6.3.2
+  melos: ^7.0.0-dev.7
+melos:
+    ignore:
+      - 'packages/**/example'
+    scripts:
+      ffmt:
+        exec: dart fix --apply && dart format .
+        description: Fix and format Dart code for all packages
+      fgen:
+        exec: flutter pub run build_runner build --delete-conflicting-outputs
+        description: Run build runner with override for all packages
