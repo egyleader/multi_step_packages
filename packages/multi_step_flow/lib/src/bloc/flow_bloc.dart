@@ -1,15 +1,37 @@
 import 'dart:async';
-import 'package:bloc/bloc.dart';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../models/flow_configuration.dart';
+import '../models/flow_state_model.dart';
 import '../models/flow_status.dart';
 import '../models/flow_step.dart';
 import 'flow_events.dart';
 
-/// Bloc responsible for managing the state of a multi-step flow
-class FlowBloc extends Bloc<FlowEvent, FlowState> {
-  /// Creates a new [FlowBloc] with an empty initial state
-  FlowBloc() : super(const FlowState(steps: [])) {
+/// Bloc for managing a multi-step flow
+class FlowBloc<TStepData> extends Bloc<FlowEvent, FlowState<TStepData>> {
+  /// The steps in the flow
+  late List<FlowStep<TStepData>> _steps;
+  
+  /// The configuration for the flow
+  FlowConfiguration _configuration;
+
+  /// Timer for timed steps
+  Timer? _timer;
+
+  /// Creates a new flow bloc with the given steps and configuration
+  FlowBloc({
+    required List<FlowStep<TStepData>> steps,
+    FlowConfiguration? configuration,
+  })  : _steps = steps,
+        _configuration = configuration ?? FlowConfiguration(),
+        super(
+          FlowState<TStepData>(
+            steps: steps,
+            status: FlowStatus.initial,
+          ),
+        ) {
+    // Set up event handlers
     on<FlowInitialized>(_onFlowInitialized);
     on<FlowNextPressed>(_onFlowNextPressed);
     on<FlowPreviousPressed>(_onFlowPreviousPressed);
@@ -20,372 +42,375 @@ class FlowBloc extends Bloc<FlowEvent, FlowState> {
     on<FlowErrorOccurred>(_onFlowErrorOccurred);
     on<FlowReset>(_onFlowReset);
     on<FlowCompleted>(_onFlowCompleted);
+    on<FlowLoading>(_onFlowLoading);
+    on<FlowStepsModified>(_onFlowStepsModified);
+    on<FlowStepDataUpdated>(_onFlowStepDataUpdated);
+
+    // Start the flow
+    add(FlowInitialized(configuration: configuration));
   }
 
-  /// Flow configuration options
-  FlowConfiguration? _configuration;
+  FlowStep<TStepData> get currentStep => state.currentStep;
 
-  /// Timer for auto-advancing timed steps
-  Timer? _stepTimer;
+  FlowState<TStepData> get currentState => state;
 
-  /// Initializes the flow with the provided steps and configuration
-  void _onFlowInitialized(FlowInitialized event, Emitter<FlowState> emit) {
-    try {
-      _configuration = event.configuration;
+  List<FlowStep<TStepData>> get steps => _steps;
 
-      // Initial state should have status = initial
-      emit(FlowState(steps: event.steps, status: FlowStatus.initial));
+  FlowConfiguration get configuration => _configuration;
 
-      // Start timer if needed
-      _startStepTimerIfNeeded(state.currentStep);
-    } catch (error) {
-      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
+  // Update a step's data
+  void updateStepData(TStepData data) {
+    add(FlowStepDataUpdated(data: data));
+  }
+
+  Future<void> _onFlowInitialized(
+      FlowInitialized event, Emitter<FlowState<TStepData>> emit) async {
+    if (event.configuration != null) {
+      _configuration = event.configuration!;
     }
+
+    // Update the state with the new configuration
+    emit(FlowState<TStepData>(
+      steps: _steps,
+      status: _configuration.persistState ? state.status : FlowStatus.initial,
+    ));
+
+    // Start timer for this step if it has a time limit
+    _startStepTimer();
+
+    // Call the onEnter method for the current step
+    await _executeCurrentStepCallback((step) => step.onEnter());
   }
 
-  /// Handles moving to the next step
   Future<void> _onFlowNextPressed(
-    FlowNextPressed event,
-    Emitter<FlowState> emit,
-  ) async {
-    try {
-      // Guard conditions
-      if (!state.hasNext) return;
-      final currentStep = state.currentStep;
-      if (currentStep == null) return;
+      FlowNextPressed event, Emitter<FlowState<TStepData>> emit) async {
+    // Cancel any existing timer
+    _cancelStepTimer();
 
-      // Validate current step if configured and not already validated
-      if (_configuration?.validateOnStepChange == true &&
-          !state.isCurrentStepValidated &&
-          !state.isCurrentStepSkipped) {
-        emit(state.copyWith(status: FlowStatus.validating));
-
-        // Perform the validation
-        bool isValid;
-        try {
-          isValid = await currentStep.validate();
-        } catch (e) {
-          emit(state.copyWith(status: FlowStatus.error, error: e.toString()));
-          return;
-        }
-
-        if (!isValid) {
-          emit(state.copyWith(status: FlowStatus.invalid));
-          return;
-        }
-
-        // Mark step as validated
-        emit(
-          state.copyWith(
-            status: FlowStatus.valid,
-            validatedSteps: {...state.validatedSteps, currentStep.id},
-          ),
-        );
-      }
-
-      // Perform exit actions for current step
-      try {
-        await currentStep.onExit();
-      } catch (e) {
-        emit(state.copyWith(status: FlowStatus.error, error: e.toString()));
-        return;
-      }
-
-      // Cancel any running timer
-      _cancelStepTimer();
-
-      // Move to next step
-      final nextState = state.copyWith(
-        currentStepIndex: state.currentStepIndex + 1,
-        status: FlowStatus.inProgress,
-      );
-      emit(nextState);
-
-      // Perform enter actions for next step
-      try {
-        await nextState.currentStep?.onEnter();
-      } catch (e) {
-        emit(nextState.copyWith(status: FlowStatus.error, error: e.toString()));
-        return;
-      }
-
-      // Start timer for next step if needed
-      _startStepTimerIfNeeded(nextState.currentStep);
-    } catch (error) {
-      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
-    }
-  }
-
-  /// Handles moving to the previous step
-  Future<void> _onFlowPreviousPressed(
-    FlowPreviousPressed event,
-    Emitter<FlowState> emit,
-  ) async {
-    try {
-      // Guard conditions
-      if (!state.hasPrevious || _configuration?.allowBackNavigation == false) {
-        return;
-      }
-      final currentStep = state.currentStep;
-      if (currentStep == null) return;
-
-      // Perform exit actions for current step
-      try {
-        await currentStep.onExit();
-      } catch (e) {
-        emit(state.copyWith(status: FlowStatus.error, error: e.toString()));
-        return;
-      }
-
-      // Cancel any running timer
-      _cancelStepTimer();
-
-      // Move to previous step
-      final nextState = state.copyWith(
-        currentStepIndex: state.currentStepIndex - 1,
-        status: FlowStatus.inProgress,
-      );
-      emit(nextState);
-
-      // Perform enter actions for previous step
-      try {
-        await nextState.currentStep?.onEnter();
-      } catch (e) {
-        emit(nextState.copyWith(status: FlowStatus.error, error: e.toString()));
-        return;
-      }
-
-      // Start timer for previous step if needed
-      _startStepTimerIfNeeded(nextState.currentStep);
-    } catch (error) {
-      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
-    }
-  }
-
-  /// Handles skipping the current step
-  Future<void> _onFlowStepSkipped(
-    FlowStepSkipped event,
-    Emitter<FlowState> emit,
-  ) async {
-    try {
-      // Guard conditions
-      final currentStep = state.currentStep;
-      if (currentStep == null || !currentStep.isSkippable) return;
-
-      // Perform skip actions
-      try {
-        await currentStep.onSkip();
-      } catch (e) {
-        emit(state.copyWith(status: FlowStatus.error, error: e.toString()));
-        return;
-      }
-
-      // Cancel any running timer
-      _cancelStepTimer();
-
-      // If this is the last step, complete the flow
-      if (!state.hasNext) {
-        await _tryCompleteFlow(emit);
-        return;
-      }
-
-      // Mark step as skipped and move to next step
-      emit(
-        state.copyWith(
-          skippedSteps: {...state.skippedSteps, currentStep.id},
-          currentStepIndex: state.currentStepIndex + 1,
-          status: FlowStatus.inProgress,
-        ),
-      );
-
-      // Perform enter actions for next step
-      try {
-        await state.currentStep?.onEnter();
-      } catch (e) {
-        emit(state.copyWith(status: FlowStatus.error, error: e.toString()));
-        return;
-      }
-
-      // Start timer for next step if needed
-      _startStepTimerIfNeeded(state.currentStep);
-    } catch (error) {
-      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
-    }
-  }
-
-  /// Handles step validation
-  void _onFlowStepValidated(FlowStepValidated event, Emitter<FlowState> emit) {
-    try {
-      // Guard conditions
-      final currentStep = state.currentStep;
-      if (currentStep == null) return;
-
-      if (event.isValid) {
-        // Mark step as validated
-        emit(
-          state.copyWith(
-            status: FlowStatus.valid,
-            validatedSteps: {...state.validatedSteps, currentStep.id},
-          ),
-        );
-
-        // Auto-advance if configured
-        if (_configuration?.autoAdvanceOnValidation == true && state.hasNext) {
-          add(const FlowNextPressed());
-        }
-      } else {
+    // Validate the current step if required by the configuration
+    if (_configuration.validateOnTransition) {
+      final isValid = await state.currentStep.validate();
+      if (!isValid) {
         emit(state.copyWith(status: FlowStatus.invalid));
-      }
-    } catch (error) {
-      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
-    }
-  }
-
-  /// Handles timer completion for timed steps
-  Future<void> _onFlowStepTimerCompleted(
-    FlowStepTimerCompleted event,
-    Emitter<FlowState> emit,
-  ) async {
-    try {
-      if (!state.hasNext) {
-        await _tryCompleteFlow(emit);
         return;
       }
-
-      add(const FlowNextPressed());
-    } catch (error) {
-      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
     }
-  }
 
-  /// Handles direct navigation to a specific step
-  Future<void> _onFlowStepSelected(
-    FlowStepSelected event,
-    Emitter<FlowState> emit,
-  ) async {
-    try {
-      // Guard conditions
-      if (event.index < 0 || event.index >= state.steps.length) return;
-      final currentStep = state.currentStep;
-      if (currentStep == null) return;
-
-      // Perform exit actions for current step
-      try {
-        await currentStep.onExit();
-      } catch (e) {
-        emit(state.copyWith(status: FlowStatus.error, error: e.toString()));
-        return;
-      }
-
-      // Cancel any running timer
-      _cancelStepTimer();
-
-      // Move to selected step
-      final nextState = state.copyWith(
-        currentStepIndex: event.index,
-        status: FlowStatus.inProgress,
-      );
-      emit(nextState);
-
-      // Perform enter actions for selected step
-      try {
-        await nextState.currentStep?.onEnter();
-      } catch (e) {
-        emit(nextState.copyWith(status: FlowStatus.error, error: e.toString()));
-        return;
-      }
-
-      // Start timer for selected step if needed
-      _startStepTimerIfNeeded(nextState.currentStep);
-    } catch (error) {
-      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
-    }
-  }
-
-  /// Handles error reporting
-  void _onFlowErrorOccurred(FlowErrorOccurred event, Emitter<FlowState> emit) {
-    emit(state.copyWith(status: FlowStatus.error, error: event.error));
-  }
-
-  /// Resets the flow to its initial state
-  Future<void> _onFlowReset(FlowReset event, Emitter<FlowState> emit) async {
-    try {
-      _cancelStepTimer();
-
-      // Reset to first step with clean state
-      final firstState = FlowState(
-        steps: state.steps,
-        status: FlowStatus.initial,
-      );
-      emit(firstState);
-
-      // Perform enter actions for first step
-      try {
-        await firstState.currentStep?.onEnter();
-
-        // Update status to inProgress after successful onEnter
-        emit(firstState.copyWith(status: FlowStatus.inProgress));
-      } catch (e) {
-        emit(
-          firstState.copyWith(status: FlowStatus.error, error: e.toString()),
-        );
-        return;
-      }
-
-      // Start timer for first step if needed
-      _startStepTimerIfNeeded(firstState.currentStep);
-    } catch (error) {
-      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
-    }
-  }
-
-  /// Completes the flow
-  Future<void> _onFlowCompleted(
-    FlowCompleted event,
-    Emitter<FlowState> emit,
-  ) async {
-    await _tryCompleteFlow(emit);
-  }
-
-  /// Helper method to complete the flow
-  Future<void> _tryCompleteFlow(Emitter<FlowState> emit) async {
-    try {
-      _cancelStepTimer();
-
-      // Execute completion callback if provided
-      if (_configuration?.onFlowComplete != null) {
-        try {
-          await _configuration!.onFlowComplete!();
-        } catch (e) {
-          emit(state.copyWith(status: FlowStatus.error, error: e.toString()));
-          return;
-        }
-      }
-
-      // Mark flow as completed
+    // If this is the last step, complete the flow
+    if (!state.hasNext) {
+      // Call exit callback for current step
+      await _executeCurrentStepCallback((step) => step.onExit());
+      
+      // Emit the completed state
       emit(state.copyWith(status: FlowStatus.completed));
-    } catch (error) {
-      emit(state.copyWith(status: FlowStatus.error, error: error.toString()));
+      
+      // Fire completion event
+      add(const FlowCompleted());
+      
+      return;
+    }
+
+    // Call exit callback for current step
+    await _executeCurrentStepCallback((step) => step.onExit());
+
+    // Move to the next step
+    final nextStepIndex = state.currentStepIndex + 1;
+    emit(state.copyWith(
+      currentStepIndex: nextStepIndex,
+      status: FlowStatus.inProgress,
+    ));
+
+    // Call enter callback for the new step
+    await _executeCurrentStepCallback((step) => step.onEnter());
+
+    // Start timer for this step if it has a time limit
+    _startStepTimer();
+  }
+
+  Future<void> _onFlowPreviousPressed(
+      FlowPreviousPressed event, Emitter<FlowState<TStepData>> emit) async {
+    if (!state.hasPrevious) return;
+
+    // Cancel any existing timer
+    _cancelStepTimer();
+
+    // Call exit callback for current step
+    await _executeCurrentStepCallback((step) => step.onExit());
+
+    // Move to previous step
+    final prevStepIndex = state.currentStepIndex - 1;
+    emit(state.copyWith(
+      currentStepIndex: prevStepIndex,
+      status: FlowStatus.inProgress,
+    ));
+
+    // Call enter callback for the new step
+    await _executeCurrentStepCallback((step) => step.onEnter());
+
+    // Start timer for this step if it has a time limit
+    _startStepTimer();
+  }
+
+  Future<void> _onFlowStepSkipped(
+      FlowStepSkipped event, Emitter<FlowState<TStepData>> emit) async {
+    if (!state.currentStep.isSkippable) return;
+
+    // Cancel any existing timer
+    _cancelStepTimer();
+
+    // Call skip callback for current step
+    await _executeCurrentStepCallback((step) => step.onSkip());
+
+    // If this is the last step, complete the flow
+    if (!state.hasNext) {
+      // Emit the completed state
+      emit(state.copyWith(
+        status: FlowStatus.completed,
+        skippedSteps: {...state.skippedSteps, state.currentStep.id},
+      ));
+      
+      // Fire completion event
+      add(const FlowCompleted());
+      
+      return;
+    }
+
+    // Move to the next step
+    final nextStepIndex = state.currentStepIndex + 1;
+    emit(state.copyWith(
+      currentStepIndex: nextStepIndex,
+      status: FlowStatus.inProgress,
+      skippedSteps: {...state.skippedSteps, state.steps[state.currentStepIndex].id},
+    ));
+
+    // Call enter callback for the new step
+    await _executeCurrentStepCallback((step) => step.onEnter());
+
+    // Start timer for this step if it has a time limit
+    _startStepTimer();
+  }
+
+  Future<void> _onFlowStepValidated(
+      FlowStepValidated event, Emitter<FlowState<TStepData>> emit) async {
+    final isValid = event.isValid;
+    final currentStepId = state.currentStep.id;
+
+    if (isValid) {
+      // Add to validated steps
+      final validatedSteps = {...state.validatedSteps, currentStepId};
+      
+      emit(state.copyWith(
+        validatedSteps: validatedSteps,
+        status: FlowStatus.valid,
+      ));
+
+      // If auto advance is enabled, move to next step automatically
+      if (_configuration.autoAdvanceOnValidation && state.hasNext) {
+        add(const FlowNextPressed());
+      }
+    } else {
+      // Remove from validated steps if it exists
+      final validatedSteps = {...state.validatedSteps};
+      validatedSteps.remove(currentStepId);
+      
+      emit(state.copyWith(
+        validatedSteps: validatedSteps,
+        status: FlowStatus.invalid,
+      ));
     }
   }
 
-  /// Starts a timer for auto-advancing timed steps
-  void _startStepTimerIfNeeded(FlowStep? step) {
-    if (step == null) return;
+  Future<void> _onFlowStepTimerCompleted(
+      FlowStepTimerCompleted event, Emitter<FlowState<TStepData>> emit) async {
+    // Move to the next step automatically
+    if (state.hasNext) {
+      add(const FlowNextPressed());
+    } else {
+      // This is the last step, complete the flow
+      add(const FlowCompleted());
+    }
+  }
 
-    final timeLimit = step.timeLimit ?? _configuration?.defaultStepDuration;
+  Future<void> _onFlowStepSelected(
+      FlowStepSelected event, Emitter<FlowState<TStepData>> emit) async {
+    final selectedIndex = event.index;
+
+    // Validate index is within bounds
+    if (selectedIndex < 0 || selectedIndex >= _steps.length) {
+      emit(state.copyWith(
+        status: FlowStatus.error,
+        error: 'Invalid step index: $selectedIndex',
+      ));
+      return;
+    }
+
+    // If trying to navigate directly to the same step, do nothing
+    if (selectedIndex == state.currentStepIndex) return;
+
+    // Cancel any existing timer
+    _cancelStepTimer();
+
+    // Call exit callback for current step
+    await _executeCurrentStepCallback((step) => step.onExit());
+
+    // Move to selected step
+    emit(state.copyWith(
+      currentStepIndex: selectedIndex,
+      status: FlowStatus.inProgress,
+    ));
+
+    // Call enter callback for the new step
+    await _executeCurrentStepCallback((step) => step.onEnter());
+
+    // Start timer for this step if it has a time limit
+    _startStepTimer();
+  }
+
+  Future<void> _onFlowErrorOccurred(
+      FlowErrorOccurred event, Emitter<FlowState<TStepData>> emit) async {
+    emit(state.copyWith(
+      status: FlowStatus.error,
+      error: event.message,
+    ));
+  }
+
+  Future<void> _onFlowReset(FlowReset event, Emitter<FlowState<TStepData>> emit) async {
+    // Cancel any existing timer
+    _cancelStepTimer();
+
+    // Call exit callback for current step
+    await _executeCurrentStepCallback((step) => step.onExit());
+
+    // Reset the flow state
+    emit(FlowState<TStepData>(
+      steps: _steps,
+      status: FlowStatus.initial,
+    ));
+
+    // Call enter callback for the first step
+    await _executeCurrentStepCallback((step) => step.onEnter());
+
+    // Start timer for this step if it has a time limit
+    _startStepTimer();
+  }
+
+  Future<void> _onFlowCompleted(
+      FlowCompleted event, Emitter<FlowState<TStepData>> emit) async {
+    // Flow has been completed
+    emit(state.copyWith(status: FlowStatus.completed));
+  }
+
+  Future<void> _onFlowLoading(
+      FlowLoading event, Emitter<FlowState<TStepData>> emit) async {
+    emit(state.copyWith(
+      status: FlowStatus.loading,
+    ));
+  }
+
+  Future<void> _onFlowStepsModified(
+      FlowStepsModified event, Emitter<FlowState<TStepData>> emit) async {
+    final newSteps = event.steps.map((step) => step as FlowStep<TStepData>).toList();
+    _steps = newSteps;
+    
+    // If current step index is out of bounds, reset to the first step
+    final currentStepIndex = state.currentStepIndex < newSteps.length
+        ? state.currentStepIndex
+        : 0;
+    
+    emit(FlowState<TStepData>(
+      steps: _steps,
+      currentStepIndex: currentStepIndex,
+      status: FlowStatus.inProgress,
+      validatedSteps: state.validatedSteps,
+      skippedSteps: state.skippedSteps,
+    ));
+    
+    // Start timer for this step if it has a time limit
+    _startStepTimer();
+  }
+
+  Future<void> _onFlowStepDataUpdated(
+      FlowStepDataUpdated event, Emitter<FlowState<TStepData>> emit) async {
+    // Update the data for the current step
+    final stepData = event.data as TStepData;
+    final currentStepIndex = state.currentStepIndex;
+    
+    final updatedStep = _steps[currentStepIndex].copyWith(data: stepData);
+    final updatedSteps = List<FlowStep<TStepData>>.from(_steps);
+    updatedSteps[currentStepIndex] = updatedStep;
+    _steps = updatedSteps;
+    
+    emit(state.copyWith(
+      steps: _steps,
+    ));
+  }
+
+  // Start a timer for the current step if it has a time limit
+  void _startStepTimer() {
+    _cancelStepTimer(); // Cancel any existing timers first
+
+    final step = state.currentStep;
+    final timeLimit = step.timeLimit;
+
     if (timeLimit == null) return;
 
-    _stepTimer = Timer(timeLimit, () {
+    _timer = Timer(timeLimit, () {
       add(const FlowStepTimerCompleted());
     });
   }
 
-  /// Cancels any running step timer
+  // Cancel the current step timer
   void _cancelStepTimer() {
-    _stepTimer?.cancel();
-    _stepTimer = null;
+    if (_timer != null && _timer!.isActive) {
+      _timer!.cancel();
+      _timer = null;
+    }
   }
+
+  // Helper to execute callbacks on the current step
+  Future<void> _executeCurrentStepCallback(
+    Future<void> Function(FlowStep<TStepData> step) callback,
+  ) async {
+    try {
+      await callback(state.currentStep);
+    } catch (e) {
+      add(FlowErrorOccurred(message: e.toString()));
+    }
+  }
+
+  /// Gets the current step
+  FlowStep<TStepData> getCurrentStep() {
+    return state.currentStep;
+  }
+
+  /// Moves to the next step
+  void nextStep() => add(const FlowNextPressed());
+
+  /// Moves to the previous step
+  void previousStep() => add(const FlowPreviousPressed());
+
+  /// Skips the current step
+  void skipStep() => add(const FlowStepSkipped());
+
+  /// Validates the current step
+  void validateStep(bool isValid) =>
+      add(FlowStepValidated(isValid: isValid));
+
+  /// Resets the flow to the start
+  void resetFlow() => add(const FlowReset());
+
+  /// Reports an error
+  void reportError(String message) => add(FlowErrorOccurred(message: message));
+
+  /// Updates the steps in the flow
+  void updateSteps(List<FlowStep<TStepData>> steps) =>
+      add(FlowStepsModified(steps: steps));
+
+  /// Completes the flow
+  void completeFlow() => add(const FlowCompleted());
+
+  /// Go to a specific step by index
+  void goToStep(int index) => add(FlowStepSelected(index: index));
 
   @override
   Future<void> close() {

@@ -1,85 +1,150 @@
-import 'package:equatable/equatable.dart';
-import '../models/flow_step.dart';
-import '../models/flow_configuration.dart';
+import 'package:meta/meta.dart';
 
-/// Base class for all flow events
-abstract class FlowEvent extends Equatable {
+import '../models/flow_configuration.dart';
+import '../models/flow_step.dart';
+
+/// Base flow event class
+@immutable
+abstract class FlowEvent {
   const FlowEvent();
 
-  @override
-  List<Object?> get props => [];
+  /// Flow initialized event
+  const factory FlowEvent.initialized({
+    FlowConfiguration? configuration,
+  }) = FlowInitialized;
+  
+  /// Next button pressed event
+  const factory FlowEvent.nextPressed() = FlowNextPressed;
+  
+  /// Previous button pressed event
+  const factory FlowEvent.previousPressed() = FlowPreviousPressed;
+  
+  /// Skip button pressed event
+  const factory FlowEvent.skipPressed() = FlowStepSkipped;
+  
+  /// Step validated event
+  const factory FlowEvent.stepValidated({
+    required bool isValid,
+  }) = FlowStepValidated;
+  
+  /// Step timer completed event
+  const factory FlowEvent.stepTimerCompleted() = FlowStepTimerCompleted;
+  
+  /// Step selected event
+  const factory FlowEvent.stepSelected({
+    required int index,
+  }) = FlowStepSelected;
+  
+  /// Error occurred event
+  const factory FlowEvent.errorOccurred({
+    required String message,
+  }) = FlowErrorOccurred;
+  
+  /// Reset flow event
+  const factory FlowEvent.reset() = FlowReset;
+  
+  /// Flow completed event
+  const factory FlowEvent.completed() = FlowCompleted;
+  
+  /// Loading event
+  const factory FlowEvent.loading() = FlowLoading;
+  
+  /// Steps modified event
+  const factory FlowEvent.stepsModified({
+    required List<FlowStep> steps,
+  }) = FlowStepsModified;
+  
+  /// Step data updated event
+  const factory FlowEvent.stepDataUpdated({
+    required dynamic data,
+  }) = FlowStepDataUpdated;
 }
 
-/// Event to initialize the flow with steps and configuration
+/// Flow initialized event
 class FlowInitialized extends FlowEvent {
-  const FlowInitialized({
-    required this.steps,
-    this.configuration = const FlowConfiguration(),
-  });
+  /// Optional configuration for the flow
+  final FlowConfiguration? configuration;
 
-  final List<FlowStep> steps;
-  final FlowConfiguration configuration;
-
-  @override
-  List<Object?> get props => [steps, configuration];
+  /// Creates a flow initialized event
+  const FlowInitialized({this.configuration});
 }
 
-/// Event to move to the next step
+/// Next button pressed event
 class FlowNextPressed extends FlowEvent {
   const FlowNextPressed();
 }
 
-/// Event to move to the previous step
+/// Previous button pressed event
 class FlowPreviousPressed extends FlowEvent {
   const FlowPreviousPressed();
 }
 
-/// Event to skip the current step
+/// Skip button pressed event
 class FlowStepSkipped extends FlowEvent {
   const FlowStepSkipped();
 }
 
-/// Event when step validation completes
+/// Step validated event
 class FlowStepValidated extends FlowEvent {
-  const FlowStepValidated({required this.isValid});
-
+  /// Whether the step is valid
   final bool isValid;
 
-  @override
-  List<Object?> get props => [isValid];
+  /// Creates a step validated event
+  const FlowStepValidated({required this.isValid});
 }
 
-/// Event when step timer completes
+/// Step timer completed event
 class FlowStepTimerCompleted extends FlowEvent {
   const FlowStepTimerCompleted();
 }
 
-/// Event to jump to a specific step
+/// Step selected event
 class FlowStepSelected extends FlowEvent {
-  const FlowStepSelected(this.index);
-
+  /// Index of the selected step
   final int index;
 
-  @override
-  List<Object?> get props => [index];
+  /// Creates a step selected event
+  const FlowStepSelected({required this.index});
 }
 
-/// Event when an error occurs
+/// Error occurred event
 class FlowErrorOccurred extends FlowEvent {
-  const FlowErrorOccurred(this.error);
+  /// Error message
+  final String message;
 
-  final String error;
-
-  @override
-  List<Object?> get props => [error];
+  /// Creates an error occurred event
+  const FlowErrorOccurred({required this.message});
 }
 
-/// Event to reset the flow
+/// Reset flow event
 class FlowReset extends FlowEvent {
   const FlowReset();
 }
 
-/// Event to complete the flow
+/// Flow completed event
 class FlowCompleted extends FlowEvent {
   const FlowCompleted();
+}
+
+/// Loading event
+class FlowLoading extends FlowEvent {
+  const FlowLoading();
+}
+
+/// Steps modified event
+class FlowStepsModified extends FlowEvent {
+  /// New list of steps
+  final List<FlowStep> steps;
+
+  /// Creates a steps modified event
+  const FlowStepsModified({required this.steps});
+}
+
+/// Step data updated event
+class FlowStepDataUpdated extends FlowEvent {
+  /// Updated step data
+  final dynamic data;
+
+  /// Creates a step data updated event
+  const FlowStepDataUpdated({required this.data});
 }
