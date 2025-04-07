@@ -27,7 +27,7 @@ This package provides a powerful solution for implementing various types of mult
 
 ```yaml
 dependencies:
-  multi_step_flow: ^1.0.0
+  multi_step_flow: ^0.3.0
 ```
 
 ## Basic Usage
@@ -237,7 +237,3 @@ final videoStep = FlowStep<LessonData>(
   data: LessonData(videoUrl: 'https://example.com/video.mp4'),
 ).withExtension('video_extension');
 ```
-
-## Complete Documentation
-
-For full documentation and examples, visit [github.com/yourorg/multi_step_flow](https://github.com/yourorg/multi_step_flow).

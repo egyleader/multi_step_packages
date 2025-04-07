@@ -26,8 +26,8 @@ The multi_step_widgets package provides ready-to-use UI components that work sea
 
 ```yaml
 dependencies:
-  multi_step_widgets: ^1.0.0
-  multi_step_flow: ^1.0.0  # Required dependency
+  multi_step_widgets: ^0.3.0
+  multi_step_flow: ^0.3.0  # Required dependency
 ```
 
 ## Core Components
@@ -276,8 +276,4 @@ class NumberedIndicator<T> extends StepIndicator<T> {
     );
   }
 }
-```
-
-## Complete Documentation
-
-For full documentation and examples, visit [github.com/yourorg/multi_step_widgets](https://github.com/yourorg/multi_step_widgets).
+``
