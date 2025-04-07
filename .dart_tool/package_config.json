@@ -201,7 +201,7 @@
     },
     {
       "name": "flutter",
-      "rootUri": "file:///Users/egyleader/fvm/versions/stable/packages/flutter",
+      "rootUri": "file:///Users/egyleader/fvm/default/packages/flutter",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -219,7 +219,7 @@
     },
     {
       "name": "flutter_test",
-      "rootUri": "file:///Users/egyleader/fvm/versions/stable/packages/flutter_test",
+      "rootUri": "file:///Users/egyleader/fvm/default/packages/flutter_test",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -231,13 +231,13 @@
     },
     {
       "name": "freezed",
-      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/freezed-3.0.4",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/freezed-2.5.8",
       "packageUri": "lib/",
-      "languageVersion": "3.6"
+      "languageVersion": "3.0"
     },
     {
       "name": "freezed_annotation",
-      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/freezed_annotation-3.0.0",
+      "rootUri": "file:///Users/egyleader/.pub-cache/hosted/pub.dev/freezed_annotation-2.4.4",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
@@ -489,7 +489,7 @@
     },
     {
       "name": "sky_engine",
-      "rootUri": "file:///Users/egyleader/fvm/versions/stable/bin/cache/pkg/sky_engine",
+      "rootUri": "file:///Users/egyleader/fvm/default/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -662,10 +662,10 @@
       "languageVersion": "3.7"
     }
   ],
-  "generated": "2025-04-07T12:07:19.159522Z",
+  "generated": "2025-04-07T12:52:26.560683Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
-  "flutterRoot": "file:///Users/egyleader/fvm/versions/stable",
+  "flutterRoot": "file:///Users/egyleader/fvm/default",
   "flutterVersion": "3.29.2",
   "pubCache": "file:///Users/egyleader/.pub-cache"
 }
