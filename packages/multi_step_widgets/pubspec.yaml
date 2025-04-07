@@ -1,6 +1,6 @@
 name: multi_step_widgets
 description: Widgets for building multi-step flows, forms, and wizards
-version: 0.3.0
+version: 0.3.0+1
 homepage: https://github.com/yourusername/multi_step_widgets
 resolution: workspace
 

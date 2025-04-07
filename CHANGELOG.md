@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-04-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`multi_step_flow` - `v0.3.0+1`](#multi_step_flow---v0301)
+ - [`multi_step_widgets` - `v0.3.0+1`](#multi_step_widgets---v0301)
+
+---
+
+#### `multi_step_flow` - `v0.3.0+1`
+
+ - **DOCS**: update README files to enhance benefits and use cases sections.
+
+#### `multi_step_widgets` - `v0.3.0+1`
+
+ - **DOCS**: update README files to enhance benefits and use cases sections.
+
+
 ## 2025-04-06
 
 ### Changes

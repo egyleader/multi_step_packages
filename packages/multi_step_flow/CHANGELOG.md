@@ -1,3 +1,7 @@
+## 0.3.0+1
+
+ - **DOCS**: update README files to enhance benefits and use cases sections.
+
 ## 0.3.0
 
 ## 0.2.0

@@ -1,6 +1,6 @@
 name: multi_step_flow
 description: A platform-agnostic solution for managing multi-step flows with support for different flow types, validation, and customization.
-version: 0.3.0
+version: 0.3.0+1
 homepage: https://github.com/egyleader/multi_step
 resolution: workspace
 
