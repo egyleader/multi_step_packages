@@ -201,7 +201,7 @@
     },
     {
       "name": "flutter",
-      "rootUri": "file:///Users/egyleader/fvm/default/packages/flutter",
+      "rootUri": "file:///Users/egyleader/fvm/versions/stable/packages/flutter",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -219,7 +219,7 @@
     },
     {
       "name": "flutter_test",
-      "rootUri": "file:///Users/egyleader/fvm/default/packages/flutter_test",
+      "rootUri": "file:///Users/egyleader/fvm/versions/stable/packages/flutter_test",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -489,7 +489,7 @@
     },
     {
       "name": "sky_engine",
-      "rootUri": "file:///Users/egyleader/fvm/default/bin/cache/pkg/sky_engine",
+      "rootUri": "file:///Users/egyleader/fvm/versions/stable/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -662,10 +662,10 @@
       "languageVersion": "3.7"
     }
   ],
-  "generated": "2025-04-07T10:05:44.112421Z",
+  "generated": "2025-04-07T12:05:06.023993Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
-  "flutterRoot": "file:///Users/egyleader/fvm/default",
+  "flutterRoot": "file:///Users/egyleader/fvm/versions/stable",
   "flutterVersion": "3.29.2",
   "pubCache": "file:///Users/egyleader/.pub-cache"
 }
